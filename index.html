@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO META TAGS -->
+    <title>AnonConnect | Free Random Chat - Talk to Strangers</title>
+    <meta name="description" content="AnonConnect is the ultimate free random chat platform. Meet new people, talk to strangers anonymously.">
+    <meta name="keywords" content="random chat, talk to strangers, omegle alternative, free chat, anonymous chat">
+    <meta name="author" content="AnonConnect Team">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#00f2ea">
+    <link rel="canonical" href="http://localhost:3000/">
+
+    <!-- SOCIAL MEDIA -->
+    <meta property="og:title" content="AnonConnect | Tap. Match. Talk.">
+    <meta property="og:description" content="Join the viral random chat community. Connect instantly with strangers worldwide.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=1200&q=80">
+    <meta property="og:url" content="http://localhost:3000/">
+    <meta property="og:type" content="website">
+
+    <!-- SCHEMA -->
+    <script type="application/ld+json">
+    { "@context": "https://schema.org", "@type": "WebApplication", "name": "AnonConnect", "url": "http://localhost:3000", "description": "Free anonymous random chat platform.", "applicationCategory": "SocialNetworkingApplication", "operatingSystem": "All", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+    </script>
+
+    <!-- 🔴 NEW: RAZORPAY SDK (FOR PAYMENT) -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav id="main-nav">
+        <div class="logo" id="nav-logo">Anon<span>Connect</span></div>
+        <ul class="nav-links">
+            <li><a href="#" id="nav-home">Home</a></li>
+            <li><a href="#" id="nav-blog">Blog</a></li>
+            <li><a href="#" id="nav-about">About</a></li>
+            <li><a href="#" id="nav-support">Support</a></li>
+        </ul>
+    </nav>
+
+    <!-- HOME FLOW -->
+    <div id="home-flow-container">
+        <!-- STEP 1: SAFETY -->
+        <div id="step-safety" class="screen-container">
+            <div class="safety-box">
+                <div class="icon-header">🔔</div>
+                <h2>Stay Safe.</h2>
+                <p class="subtitle">Welcome to AnonConnect.</p>
+                <div class="checklist">
+                    <h3>✅ Before you continue</h3>
+                    <label class="check-item"><input type="checkbox" id="check-age"><span>I am 18+ years old</span></label>
+                    <label class="check-item"><input type="checkbox" id="check-rules"><span>I follow Community Guidelines</span></label>
+                    <label class="check-item"><input type="checkbox" id="check-terms"><span>I accept Terms & Privacy Policy</span></label>
+                </div>
+                <button id="btn-safety-continue" class="btn full-width-btn" disabled>I Agree & Continue</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: LANDING -->
+        <div id="step-landing" class="screen-container hidden">
+            <div class="viral-hero">
+                <h1 class="viral-title">Tap. Match. <br><span class="highlight">Talk.</span></h1>
+                <button id="btn-lets-chat" class="btn neon-btn">[ LET’S CHAT ]</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: PREFERENCES -->
+        <div id="step-prefs" class="screen-container hidden">
+            <div class="pref-box">
+                <h2>Set Preferences</h2>
+                <div class="points-badge" id="premium-status-badge">Status: Free</div>
+                
+                <div class="nickname-section">
+                    <label>Choose a Nickname</label>
+                    <input type="text" id="nickname-input" placeholder="e.g. Rocky..." maxlength="12" autocomplete="off">
+                </div>
+
+                <!-- MY GENDER -->
+                <div class="input-group">
+                    <label>I am a:</label>
+                    <div class="my-gender-options">
+                        <div class="my-gender-btn active" id="iam-male" onclick="setMyGender('male')">
+                            <i class="fa-solid fa-person"></i> Male
+                        </div>
+                        <div class="my-gender-btn" id="iam-female" onclick="setMyGender('female')">
+                            <i class="fa-solid fa-person-dress"></i> Female
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARTNER GENDER -->
+                <div class="input-group">
+                    <label>Start chat with:</label>
+                    <div class="gender-grid">
+                        <div class="gender-option" id="btn-male"><i class="fa-solid fa-person"></i><span>Male <i class="fa-solid fa-lock" style="font-size:0.7rem"></i></span></div>
+                        <div class="gender-option" id="btn-female"><i class="fa-solid fa-person-dress"></i><span>Female <i class="fa-solid fa-lock" style="font-size:0.7rem"></i></span></div>
+                        <div class="gender-option active" id="btn-random"><i class="fa-solid fa-shuffle"></i><span>Random</span></div>
+                    </div>
+                </div>
+
+                <button id="btn-start-final" class="btn primary-btn">[ START ]</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGES (Content Unchanged) -->
+    <div id="page-blog" class="screen-container hidden scrollable-page">
+        <div id="blog-grid-view" class="page-content-box"><h1>Latest Updates</h1><div id="blog-grid" class="blog-grid"></div></div>
+        <div id="blog-full-view" class="page-content-box hidden"><button id="back-to-blog" class="btn secondary-btn" style="width:auto; margin-bottom:20px;">⬅ Back to Articles</button><div id="full-blog-content"></div></div>
+    </div>
+    <div id="page-about" class="screen-container hidden scrollable-page">
+        <div class="page-content-box"><h1 class="center-text">About Us</h1><div class="about-content"><p>We connect people safely.</p></div></div>
+    </div>
+    <div id="page-support" class="screen-container hidden scrollable-page">
+        <div class="page-content-box"><h1 class="center-text">Support</h1><div class="support-cards"><div class="support-card"><h3>Discord</h3><button class="btn primary-btn">Join</button></div></div><div class="faq-section"><h2>FAQ</h2><div class="faq-item"><h4>Free?</h4><p>Yes.</p></div></div></div>
+    </div>
+
+    <!-- CHAT INTERFACE -->
+    <div id="page-chat" class="hidden">
+        <div class="app-container">
+            <header class="chat-header">
+                <div class="header-left"><button id="back-home-btn">⬅ Exit</button><div><h1>Anon<span>Connect</span></h1><div id="typing-status" class="typing-text"></div></div></div>
+                <div class="status" id="status-text">🔴 Offline</div>
+            </header>
+            <div id="waiting-screen" class="hidden"><div class="loader"></div><h3>Searching...</h3></div>
+            <div id="chat-screen" class="hidden">
+                <div class="chat-area" id="messages"></div>
+                <div class="auto-skip-container"><label><input type="checkbox" id="auto-skip-toggle"> Auto-Next</label></div>
+                <div id="emoji-picker" class="hidden"><span>😀</span><span>😂</span><span>😍</span><span>🔥</span><span>😭</span></div>
+                <div class="input-area"><button id="emoji-btn">😊</button><input type="text" id="msg-input" placeholder="Type..." autocomplete="off"><button id="send-btn">➤</button></div>
+                <button id="skip-btn" class="skip-bar">Skip / Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREMIUM MODALS -->
+    <div id="premium-overlay" class="modal-overlay hidden">
+        <div id="modal-login" class="modal-box">
+            <div class="modal-header"><h2>Login</h2><p>Claim account to subscribe.</p></div>
+            <button class="btn-google" id="btn-google-login">Continue with Google</button>
+            <button class="close-modal" onclick="closePremiumModal()">×</button>
+        </div>
+        <div id="modal-pricing" class="modal-box hidden">
+            <div class="modal-header"><h2>Plans</h2></div>
+            <div class="plans-container">
+                <div class="plan-card basic"><h3>Basic</h3><div class="price">₹199</div><button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Select</button></div>
+                <div class="plan-card plus"><h3>Plus</h3><div class="price">₹399</div><button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Select</button></div>
+            </div>
+            <button class="close-modal" onclick="closePremiumModal()">×</button>
+        </div>
+    </div>
+
+   <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+    
+    <!-- 🔴 NEW: FIREBASE SDK (Login ke liye) -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
