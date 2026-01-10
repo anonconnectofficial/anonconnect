@@ -52,9 +52,9 @@
         <div class="register-box">
             <div class="icon-header">👋</div>
             <h2>Welcome to AnonConnect</h2>
-            <p class="subtitle">Login to start chatting</p>
+            <p class="subtitle">Choose how you want to continue</p>
             
-            <!-- User Status Display -->
+            <!-- User Status Display (Hidden by default, shows after login) -->
             <div id="user-status-card" class="hidden" style="background: rgba(0, 242, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(0, 242, 234, 0.3);">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div id="user-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
@@ -183,32 +183,99 @@
         </div>
     </div>
 
-    <!-- PAGES (Content Unchanged) -->
+    <!-- PAGES -->
     <div id="page-blog" class="screen-container hidden scrollable-page">
-        <div id="blog-grid-view" class="page-content-box"><h1>Latest Updates</h1><div id="blog-grid" class="blog-grid"></div></div>
-        <div id="blog-full-view" class="page-content-box hidden"><button id="back-to-blog" class="btn secondary-btn" style="width:auto; margin-bottom:20px;">⬅ Back to Articles</button><div id="full-blog-content"></div></div>
+        <div id="blog-grid-view" class="page-content-box">
+            <h1>Latest Updates</h1>
+            <div id="blog-grid" class="blog-grid"></div>
+        </div>
+        <div id="blog-full-view" class="page-content-box hidden">
+            <button id="back-to-blog" class="btn secondary-btn" style="width:auto; margin-bottom:20px;">⬅ Back to Articles</button>
+            <div id="full-blog-content"></div>
+        </div>
     </div>
+    
     <div id="page-about" class="screen-container hidden scrollable-page">
-        <div class="page-content-box"><h1 class="center-text">About Us</h1><div class="about-content"><p>We connect people safely.</p></div></div>
+        <div class="page-content-box">
+            <h1 class="center-text">About Us</h1>
+            <div class="about-content">
+                <p>We connect people safely and anonymously from around the world.</p>
+                <p style="margin-top: 20px;">AnonConnect believes in the power of human connection. Our platform allows you to meet new people, share experiences, and have meaningful conversations - all while maintaining your privacy.</p>
+            </div>
+        </div>
     </div>
+    
     <div id="page-support" class="screen-container hidden scrollable-page">
-        <div class="page-content-box"><h1 class="center-text">Support</h1><div class="support-cards"><div class="support-card"><h3>Discord</h3><button class="btn primary-btn">Join</button></div></div><div class="faq-section"><h2>FAQ</h2><div class="faq-item"><h4>Free?</h4><p>Yes.</p></div></div></div>
+        <div class="page-content-box">
+            <h1 class="center-text">Support</h1>
+            <div class="support-cards">
+                <div class="support-card">
+                    <i class="fab fa-discord"></i>
+                    <h3>Discord Community</h3>
+                    <p>Join our Discord server for support and updates</p>
+                    <button class="btn primary-btn">Join Server</button>
+                </div>
+                <div class="support-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Email Support</h3>
+                    <p>Get help via email</p>
+                    <button class="btn primary-btn">Contact Us</button>
+                </div>
+            </div>
+            <div class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-item">
+                    <h4>Is AnonConnect free?</h4>
+                    <p>Yes! Basic features are completely free. Premium features unlock advanced filters.</p>
+                </div>
+                <div class="faq-item">
+                    <h4>How do I report inappropriate behavior?</h4>
+                    <p>Click the report button during any chat. We take safety seriously.</p>
+                </div>
+                <div class="faq-item">
+                    <h4>What are premium features?</h4>
+                    <p>Premium members can filter by gender (Male/Female) instead of just random matching.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- CHAT INTERFACE -->
     <div id="page-chat" class="hidden">
         <div class="app-container">
             <header class="chat-header">
-                <div class="header-left"><button id="back-home-btn">⬅ Exit</button><div><h1>Anon<span>Connect</span></h1><div id="typing-status" class="typing-text"></div></div></div>
+                <div class="header-left">
+                    <button id="back-home-btn">⬅ Exit</button>
+                    <div>
+                        <h1>Anon<span>Connect</span></h1>
+                        <div id="typing-status" class="typing-text"></div>
+                    </div>
+                </div>
                 <div class="status" id="status-text">🔴 Offline</div>
             </header>
-            <div id="waiting-screen" class="hidden"><div class="loader"></div><h3>Searching...</h3></div>
+            
+            <div id="waiting-screen" class="hidden">
+                <div class="loader"></div>
+                <h3>Searching for a stranger...</h3>
+                <p style="color: #888; margin-top: 10px;">This usually takes a few seconds</p>
+            </div>
+            
             <div id="chat-screen" class="hidden">
                 <div class="chat-area" id="messages"></div>
-                <div class="auto-skip-container"><label><input type="checkbox" id="auto-skip-toggle"> Auto-Next</label></div>
-                <div id="emoji-picker" class="hidden"><span>😀</span><span>😂</span><span>😍</span><span>🔥</span><span>😭</span></div>
-                <div class="input-area"><button id="emoji-btn">😊</button><input type="text" id="msg-input" placeholder="Type..." autocomplete="off"><button id="send-btn">➤</button></div>
-                <button id="skip-btn" class="skip-bar">Skip / Next</button>
+                <div class="auto-skip-container">
+                    <label><input type="checkbox" id="auto-skip-toggle"> Auto-Next (Skip automatically when partner leaves)</label>
+                </div>
+                <div id="emoji-picker" class="hidden">
+                    <span>😀</span><span>😂</span><span>😍</span><span>🔥</span><span>😭</span>
+                    <span>👍</span><span>❤️</span><span>😎</span><span>🤔</span><span>😴</span>
+                    <span>🎉</span><span>💯</span><span>🙏</span><span>😊</span><span>🤗</span>
+                </div>
+                <div class="input-area">
+                    <button id="emoji-btn">😊</button>
+                    <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
+                    <button id="send-btn">➤</button>
+                </div>
+                <button id="skip-btn" class="skip-bar">Skip / Next Stranger</button>
             </div>
         </div>
     </div>
@@ -228,19 +295,20 @@
                         <li>✓ Male filter</li>
                         <li>✓ Female filter</li>
                         <li>✓ 30 days access</li>
+                        <li>✓ Priority matching</li>
                     </ul>
-                    <button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Select</button>
+                    <button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Buy Now</button>
                 </div>
                 <div class="plan-card plus">
                     <h3>Plus</h3>
                     <div class="price">₹399</div>
                     <ul style="text-align: left; margin: 15px 0; font-size: 0.85rem; color: #ccc;">
                         <li>✓ All Basic features</li>
-                        <li>✓ Priority matching</li>
+                        <li>✓ Priority support</li>
                         <li>✓ No ads</li>
                         <li>✓ 30 days access</li>
                     </ul>
-                    <button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Select</button>
+                    <button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Buy Now</button>
                 </div>
             </div>
             <button class="close-modal" onclick="closePremiumModal()">×</button>
