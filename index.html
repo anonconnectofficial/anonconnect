@@ -25,7 +25,7 @@
     { "@context": "https://schema.org", "@type": "WebApplication", "name": "AnonConnect", "url": "http://localhost:3000", "description": "Free anonymous random chat platform.", "applicationCategory": "SocialNetworkingApplication", "operatingSystem": "All", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
     </script>
 
-    <!-- 🔴 NEW: RAZORPAY SDK (FOR PAYMENT) -->
+    <!-- RAZORPAY SDK -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <link rel="stylesheet" href="style.css">
@@ -47,8 +47,56 @@
         </ul>
     </nav>
 
+    <!-- 🔥 NEW: REGISTRATION/LOGIN PAGE (STEP 0) -->
+    <div id="step-register" class="screen-container">
+        <div class="register-box">
+            <div class="icon-header">👋</div>
+            <h2>Welcome to AnonConnect</h2>
+            <p class="subtitle">Login to start chatting</p>
+            
+            <!-- User Status Display -->
+            <div id="user-status-card" class="hidden" style="background: rgba(0, 242, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(0, 242, 234, 0.3);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="user-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        👤
+                    </div>
+                    <div style="flex: 1;">
+                        <div id="logged-user-email" style="font-weight: bold; color: #00f2ea; margin-bottom: 3px;"></div>
+                        <div id="logged-user-status" style="font-size: 0.85rem; color: #888;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Options -->
+            <div id="login-options">
+                <button class="btn-google" id="btn-register-google">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+                
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+                
+                <button class="btn-anonymous" id="btn-register-anonymous">
+                    <i class="fa-solid fa-user-secret"></i> Continue as Guest
+                </button>
+                
+                <p style="font-size: 0.8rem; color: #888; margin-top: 20px; line-height: 1.6;">
+                    <i class="fa-solid fa-info-circle"></i> 
+                    <strong>Guest Mode:</strong> Limited to Random chat only.<br>
+                    <strong>Google Login:</strong> Unlock premium features (Male/Female filters).
+                </p>
+            </div>
+
+            <!-- Continue Button (shown after login) -->
+            <button id="btn-continue-to-safety" class="btn full-width-btn hidden">
+                Continue to Chat <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- HOME FLOW -->
-    <div id="home-flow-container">
+    <div id="home-flow-container" class="hidden">
         <!-- STEP 1: SAFETY -->
         <div id="step-safety" class="screen-container">
             <div class="safety-box">
@@ -69,7 +117,7 @@
         <div id="step-landing" class="screen-container hidden">
             <div class="viral-hero">
                 <h1 class="viral-title">Tap. Match. <br><span class="highlight">Talk.</span></h1>
-                <button id="btn-lets-chat" class="btn neon-btn">[ LET’S CHAT ]</button>
+                <button id="btn-lets-chat" class="btn neon-btn">[ LET'S CHAT ]</button>
             </div>
         </div>
 
@@ -77,6 +125,20 @@
         <div id="step-prefs" class="screen-container hidden">
             <div class="pref-box">
                 <h2>Set Preferences</h2>
+                
+                <!-- 🔥 NEW: User Info Display -->
+                <div class="user-info-banner">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <div id="pref-user-email" style="font-size: 0.85rem; color: #00f2ea;"></div>
+                            <div id="pref-user-status" style="font-size: 0.75rem; color: #888;"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="points-badge" id="premium-status-badge">Status: Free</div>
                 
                 <div class="nickname-section">
@@ -101,9 +163,18 @@
                 <div class="input-group">
                     <label>Start chat with:</label>
                     <div class="gender-grid">
-                        <div class="gender-option" id="btn-male"><i class="fa-solid fa-person"></i><span>Male <i class="fa-solid fa-lock" style="font-size:0.7rem"></i></span></div>
-                        <div class="gender-option" id="btn-female"><i class="fa-solid fa-person-dress"></i><span>Female <i class="fa-solid fa-lock" style="font-size:0.7rem"></i></span></div>
-                        <div class="gender-option active" id="btn-random"><i class="fa-solid fa-shuffle"></i><span>Random</span></div>
+                        <div class="gender-option" id="btn-male">
+                            <i class="fa-solid fa-person"></i>
+                            <span>Male <i class="fa-solid fa-lock premium-lock" style="font-size:0.7rem"></i></span>
+                        </div>
+                        <div class="gender-option" id="btn-female">
+                            <i class="fa-solid fa-person-dress"></i>
+                            <span>Female <i class="fa-solid fa-lock premium-lock" style="font-size:0.7rem"></i></span>
+                        </div>
+                        <div class="gender-option active" id="btn-random">
+                            <i class="fa-solid fa-shuffle"></i>
+                            <span>Random</span>
+                        </div>
                     </div>
                 </div>
 
@@ -144,16 +215,33 @@
 
     <!-- PREMIUM MODALS -->
     <div id="premium-overlay" class="modal-overlay hidden">
-        <div id="modal-login" class="modal-box">
-            <div class="modal-header"><h2>Login</h2><p>Claim account to subscribe.</p></div>
-            <button class="btn-google" id="btn-google-login">Continue with Google</button>
-            <button class="close-modal" onclick="closePremiumModal()">×</button>
-        </div>
-        <div id="modal-pricing" class="modal-box hidden">
-            <div class="modal-header"><h2>Plans</h2></div>
+        <div id="modal-pricing" class="modal-box">
+            <div class="modal-header">
+                <h2>Upgrade to Premium</h2>
+                <p>Unlock Male/Female gender filters</p>
+            </div>
             <div class="plans-container">
-                <div class="plan-card basic"><h3>Basic</h3><div class="price">₹199</div><button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Select</button></div>
-                <div class="plan-card plus"><h3>Plus</h3><div class="price">₹399</div><button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Select</button></div>
+                <div class="plan-card basic">
+                    <h3>Basic</h3>
+                    <div class="price">₹199</div>
+                    <ul style="text-align: left; margin: 15px 0; font-size: 0.85rem; color: #ccc;">
+                        <li>✓ Male filter</li>
+                        <li>✓ Female filter</li>
+                        <li>✓ 30 days access</li>
+                    </ul>
+                    <button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Select</button>
+                </div>
+                <div class="plan-card plus">
+                    <h3>Plus</h3>
+                    <div class="price">₹399</div>
+                    <ul style="text-align: left; margin: 15px 0; font-size: 0.85rem; color: #ccc;">
+                        <li>✓ All Basic features</li>
+                        <li>✓ Priority matching</li>
+                        <li>✓ No ads</li>
+                        <li>✓ 30 days access</li>
+                    </ul>
+                    <button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Select</button>
+                </div>
             </div>
             <button class="close-modal" onclick="closePremiumModal()">×</button>
         </div>
@@ -162,7 +250,6 @@
    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
     
-    <!-- 🔴 NEW: FIREBASE SDK (Login ke liye) -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
