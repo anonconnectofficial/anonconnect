@@ -1,58 +1,151 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-const io = require("socket.io")(http, { cors: { origin: "*" } });
+const io = require("socket.io")(http, { 
+  cors: { 
+    origin: "*",
+    methods: ["GET", "POST"]
+  } 
+});
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
-app.use(cors({ origin: "*" }));
+// ============================================
+// 🔥 MONGODB CONNECTION
+// ============================================
+
+const MONGO_URI = process.env.MONGO_URI;
+const client = new MongoClient(MONGO_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+let db;
+let usersCollection;
+
+// Connect to MongoDB
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log("✅ Connected to MongoDB!");
+    
+    db = client.db("anonconnect");
+    usersCollection = db.collection("users");
+    
+    // Create index on email for faster queries
+    await usersCollection.createIndex({ email: 1 }, { unique: true });
+    
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error:", error);
+    process.exit(1);
+  }
+}
+
+connectDB();
+
+// ============================================
+// MIDDLEWARE
+// ============================================
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ================== RAZORPAY CONFIG ==================
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
+  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_S1af2JV9L5Vlw5",
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 // ================== ROUTES ==================
 
-// SEO
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
   res.send("User-agent: *\nAllow: /");
 });
 
+app.get("/", (req, res) => {
+  res.json({ 
+    status: "Server is running", 
+    timestamp: new Date(),
+    database: db ? "Connected" : "Disconnected"
+  });
+});
+
 // ✅ CREATE ORDER
 app.post("/create-order", async (req, res) => {
   try {
+    console.log("📦 Create Order Request:", req.body);
+    
     const { amount } = req.body;
-    if (!amount) return res.status(400).json({ error: "Amount required" });
+    
+    if (!amount) {
+      return res.status(400).json({ error: "Amount required" });
+    }
+
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      console.error("❌ RAZORPAY_KEY_SECRET not set");
+      return res.status(500).json({ error: "Payment gateway not configured" });
+    }
 
     const order = await razorpay.orders.create({
-      amount: amount * 100, // paise
+      amount: amount * 100,
       currency: "INR",
       receipt: "order_" + Date.now(),
     });
 
+    console.log("✅ Order Created:", order.id);
     res.json(order);
+    
   } catch (err) {
-    console.error("Create Order Error:", err);
-    res.status(500).json({ error: "Order creation failed" });
+    console.error("❌ Create Order Error:", err);
+    res.status(500).json({ 
+      error: "Order creation failed", 
+      details: err.message 
+    });
   }
 });
 
-// ✅ VERIFY PAYMENT (REAL SIGNATURE CHECK)
-app.post("/verify-payment", (req, res) => {
+// ✅ VERIFY PAYMENT & SAVE TO DATABASE
+app.post("/verify-payment", async (req, res) => {
   try {
+    console.log("🔐 Verify Payment Request:", req.body);
+    
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
+      email,
+      plan
     } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Missing payment details" 
+      });
+    }
+
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Email required" 
+      });
+    }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -62,31 +155,136 @@ app.post("/verify-payment", (req, res) => {
       .digest("hex");
 
     if (expectedSignature === razorpay_signature) {
-      // 👉 Future: DB में premium=true save करना
-      return res.json({ success: true, isPremium: true });
+      console.log("✅ Payment Verified for:", email);
+      
+      // Calculate expiry date (1 month from now)
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + 1);
+      
+      // Save/Update user in database
+      await usersCollection.updateOne(
+        { email: email },
+        { 
+          $set: { 
+            isPremium: true,
+            plan: plan,
+            paymentId: razorpay_payment_id,
+            orderId: razorpay_order_id,
+            purchaseDate: new Date(),
+            expiryDate: expiryDate,
+            lastUpdated: new Date()
+          }
+        },
+        { upsert: true } // Create if doesn't exist
+      );
+      
+      console.log("💾 Saved to database:", email, "Plan:", plan, "Expires:", expiryDate);
+      
+      return res.json({ 
+        success: true, 
+        isPremium: true,
+        expiryDate: expiryDate,
+        message: "Payment verified & premium activated!" 
+      });
+      
     } else {
-      return res.status(400).json({ success: false });
+      console.error("❌ Signature Mismatch");
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid signature" 
+      });
     }
+    
   } catch (err) {
-    console.error("Verify Error:", err);
-    res.status(500).json({ success: false });
+    console.error("❌ Verify Error:", err);
+    res.status(500).json({ 
+      success: false,
+      error: "Verification failed",
+      details: err.message
+    });
   }
 });
 
-// ✅ PREMIUM STATUS CHECK (Dummy – Future DB)
-app.post("/check-status", (req, res) => {
-  res.json({ isPremium: false });
+// ✅ CHECK PREMIUM STATUS FROM DATABASE
+app.post("/check-status", async (req, res) => {
+  try {
+    console.log("📊 Status Check Request:", req.body);
+    
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.json({ isPremium: false });
+    }
+    
+    // Find user in database
+    const user = await usersCollection.findOne({ email: email });
+    
+    if (!user) {
+      console.log("❌ User not found:", email);
+      return res.json({ isPremium: false });
+    }
+    
+    // Check if premium is expired
+    const now = new Date();
+    const isExpired = user.expiryDate && new Date(user.expiryDate) < now;
+    
+    if (isExpired) {
+      console.log("⏰ Premium expired for:", email);
+      
+      // Update database to mark as expired
+      await usersCollection.updateOne(
+        { email: email },
+        { $set: { isPremium: false, lastUpdated: new Date() } }
+      );
+      
+      return res.json({ 
+        isPremium: false,
+        expired: true,
+        expiryDate: user.expiryDate 
+      });
+    }
+    
+    console.log("✅ Premium active for:", email, "Expires:", user.expiryDate);
+    
+    return res.json({ 
+      isPremium: user.isPremium || false,
+      plan: user.plan,
+      expiryDate: user.expiryDate,
+      daysRemaining: Math.ceil((new Date(user.expiryDate) - now) / (1000 * 60 * 60 * 24))
+    });
+    
+  } catch (err) {
+    console.error("❌ Status Check Error:", err);
+    res.json({ isPremium: false });
+  }
+});
+
+// ✅ GET ALL PREMIUM USERS (Admin Only)
+app.get("/admin/users", async (req, res) => {
+  try {
+    const users = await usersCollection.find({ isPremium: true }).toArray();
+    res.json({ 
+      total: users.length,
+      users: users 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ================== CHAT SOCKET ==================
 let queue = [];
 
 io.on("connection", (socket) => {
+  console.log("🔌 New connection:", socket.id);
   socket.lastMsgTime = 0;
 
   socket.on("find_partner", (userInfo) => {
-    socket.userInfo =
-      userInfo || { nickname: "Stranger", myGender: "male", partnerGender: "random" };
+    socket.userInfo = userInfo || { 
+      nickname: "Stranger", 
+      myGender: "male", 
+      partnerGender: "random" 
+    };
 
     queue = queue.filter((s) => s.id !== socket.id);
 
@@ -104,11 +302,24 @@ io.on("connection", (socket) => {
       const room = socket.id + "#" + partner.id;
       socket.join(room);
       partner.join(room);
-      socket.emit("chat_start", { room, country: partner.userInfo.country, nickname: partner.userInfo.nickname });
-      partner.emit("chat_start", { room, country: socket.userInfo.country, nickname: socket.userInfo.nickname });
+      
+      socket.emit("chat_start", { 
+        room, 
+        country: partner.userInfo.country, 
+        nickname: partner.userInfo.nickname 
+      });
+      
+      partner.emit("chat_start", { 
+        room, 
+        country: socket.userInfo.country, 
+        nickname: socket.userInfo.nickname 
+      });
+      
+      console.log("✅ Match found:", socket.id, "↔", partner.id);
     } else {
       queue.push(socket);
       socket.emit("waiting");
+      console.log("⏳ User waiting:", socket.id);
     }
   });
 
@@ -130,8 +341,22 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     queue = queue.filter((s) => s.id !== socket.id);
+    console.log("❌ Disconnected:", socket.id);
   });
 });
 
+// ================== GRACEFUL SHUTDOWN ==================
+process.on('SIGINT', async () => {
+  console.log('🛑 Shutting down gracefully...');
+  await client.close();
+  process.exit(0);
+});
+
+// ================== START SERVER ==================
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => console.log("Server running on", PORT));
+http.listen(PORT, () => {
+  console.log("🚀 Server running on port", PORT);
+  console.log("🔑 Razorpay Key ID:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Missing ❌");
+  console.log("🔒 Razorpay Secret:", process.env.RAZORPAY_KEY_SECRET ? "Set ✅" : "Missing ❌");
+  console.log("🗄️  MongoDB:", MONGO_URI ? "Configured ✅" : "Missing ❌");
+});
