@@ -147,6 +147,14 @@ app.post("/verify-payment", async (req, res) => {
       });
     }
 
+    // 🔥 Prevent guest users from upgrading
+    if (email.startsWith('guest_')) {
+      return res.status(400).json({
+        success: false,
+        error: "Guest accounts cannot purchase premium. Please login with Google."
+      });
+    }
+
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
@@ -215,6 +223,15 @@ app.post("/check-status", async (req, res) => {
     if (!email) {
       return res.json({ isPremium: false });
     }
+
+    // 🔥 Guest users are never premium
+    if (email.startsWith('guest_')) {
+      return res.json({ 
+        isPremium: false,
+        isGuest: true,
+        message: "Guest mode - limited features"
+      });
+    }
     
     // Find user in database
     const user = await usersCollection.findOne({ email: email });
@@ -279,15 +296,54 @@ io.on("connection", (socket) => {
   console.log("🔌 New connection:", socket.id);
   socket.lastMsgTime = 0;
 
-  socket.on("find_partner", (userInfo) => {
+  socket.on("find_partner", async (userInfo) => {
     socket.userInfo = userInfo || { 
       nickname: "Stranger", 
       myGender: "male", 
-      partnerGender: "random" 
+      partnerGender: "random",
+      isPremium: false,
+      isGuest: true
     };
 
+    // 🔥 SERVER-SIDE PREMIUM VALIDATION
+    // Only allow non-random gender filters if user has premium
+    if (userInfo.partnerGender !== 'random') {
+      // Check if it's a guest
+      if (userInfo.isGuest || !userInfo.email || userInfo.email.startsWith('guest_')) {
+        console.log("⚠️ Guest attempted gender filter:", socket.id);
+        socket.userInfo.partnerGender = 'random'; // Force random
+        socket.emit('premium_required', { 
+          message: 'Gender filters require Google login & Premium subscription' 
+        });
+      } 
+      // Check if user has valid premium status
+      else if (!userInfo.isPremium) {
+        // Double-check with database
+        try {
+          const user = await usersCollection.findOne({ email: userInfo.email });
+          
+          if (!user || !user.isPremium) {
+            console.log("⚠️ Non-premium user attempted gender filter:", userInfo.email);
+            socket.userInfo.partnerGender = 'random'; // Force random
+            socket.emit('premium_required', { 
+              message: 'Premium subscription required for Male/Female filters' 
+            });
+          } else {
+            console.log("✅ Premium validated for:", userInfo.email);
+          }
+        } catch (err) {
+          console.error("❌ Database check failed:", err);
+          socket.userInfo.partnerGender = 'random';
+        }
+      } else {
+        console.log("✅ Premium user using gender filter:", userInfo.email);
+      }
+    }
+
+    // Remove from queue if already waiting
     queue = queue.filter((s) => s.id !== socket.id);
 
+    // Try to find a match
     const matchIndex = queue.findIndex((waiting) => {
       const me = socket.userInfo;
       const them = waiting.userInfo;
@@ -316,10 +372,12 @@ io.on("connection", (socket) => {
       });
       
       console.log("✅ Match found:", socket.id, "↔", partner.id);
+      console.log("   User 1:", socket.userInfo.email || 'guest', "(", socket.userInfo.partnerGender, ")");
+      console.log("   User 2:", partner.userInfo.email || 'guest', "(", partner.userInfo.partnerGender, ")");
     } else {
       queue.push(socket);
       socket.emit("waiting");
-      console.log("⏳ User waiting:", socket.id);
+      console.log("⏳ User waiting:", socket.id, "(", socket.userInfo.partnerGender, ")");
     }
   });
 
