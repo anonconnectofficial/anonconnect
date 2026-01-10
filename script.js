@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
 
 // --- FIREBASE CONFIG ---
 const firebaseConfig = {
@@ -55,6 +55,23 @@ let selectedPartnerGender = 'random';
 let myGender = 'male';
 let userEmail = null;
 let isMuted = false;
+
+// ============================================
+// 🔥 AUTO-LOGIN CHECK (NEW FEATURE)
+// ============================================
+
+// Check if user is already logged in when page loads
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        userEmail = user.email;
+        console.log("🔐 User already logged in:", userEmail);
+        
+        // Automatically check premium status from database
+        checkDatabaseStatus(userEmail);
+    } else {
+        console.log("👤 No user logged in");
+    }
+});
 
 // --- BAD WORD FILTER ---
 const badWords = ["fuck", "sex", "porn", "dick", "pussy", "nude", "horny", "bitch", "randi", "chut", "lund"];
@@ -141,7 +158,15 @@ async function checkDatabaseStatus(email) {
         if (data.isPremium) { 
             isPremium = true; 
             updatePremiumUI();
-            console.log("✅ User is PREMIUM until:", data.expiryDate);
+            
+            // Show expiry info
+            if (data.daysRemaining) {
+                console.log(`✅ PREMIUM ACTIVE - ${data.daysRemaining} days remaining`);
+                premiumStatusBadge.title = `Premium expires in ${data.daysRemaining} days`;
+            }
+        } else if (data.expired) {
+            console.log("⏰ Premium expired on:", data.expiryDate);
+            showExpiryNotification();
         }
     } catch(e) { 
         console.error("❌ DB Check Failed:", e); 
@@ -151,12 +176,23 @@ async function checkDatabaseStatus(email) {
 function updatePremiumUI() {
     premiumStatusBadge.innerText = "Status: PREMIUM 👑";
     premiumStatusBadge.style.color = "#00f2ea";
+    premiumStatusBadge.style.fontWeight = "bold";
     
     // Unlock gender filters
     const maleLock = document.querySelector('#btn-male i.fa-lock');
     const femaleLock = document.querySelector('#btn-female i.fa-lock');
     if(maleLock) maleLock.style.display = 'none';
     if(femaleLock) femaleLock.style.display = 'none';
+    
+    console.log("✨ Premium UI unlocked!");
+}
+
+function showExpiryNotification() {
+    premiumStatusBadge.innerText = "Status: EXPIRED ⏰";
+    premiumStatusBadge.style.color = "#ff4757";
+    
+    // Optional: Show renewal popup
+    // alert("Your premium subscription has expired. Renew now!");
 }
 
 // Google Login Handler
@@ -185,8 +221,6 @@ window.initiatePayment = async function(plan, amount) {
     
     try {
         console.log("🔄 Creating order for ₹" + amount);
-        console.log("📧 Email:", userEmail);
-        console.log("🔗 Backend:", BACKEND_URL);
         
         // Step 1: Create Order
         const orderResponse = await fetch(`${BACKEND_URL}/create-order`, {
@@ -208,7 +242,7 @@ window.initiatePayment = async function(plan, amount) {
             "amount": order.amount, 
             "currency": "INR", 
             "name": "AnonConnect Premium", 
-            "description": `${plan} Plan Subscription`,
+            "description": `${plan} Plan - 1 Month Access`,
             "order_id": order.id,
             "handler": async function (response) {
                 console.log("💳 Payment Response:", response);
@@ -237,8 +271,9 @@ window.initiatePayment = async function(plan, amount) {
                     console.log("📦 Verification response:", verifyData);
                     
                     if (verifyData.success) {
-                        console.log("✅ Payment Verified Successfully!");
-                        alert("🎉 Payment Successful! You are now Premium!");
+                        console.log("✅ Payment Verified & Saved to Database!");
+                        alert(`🎉 Payment Successful!\n\nYou now have PREMIUM access for 1 month!\nExpires: ${new Date(verifyData.expiryDate).toLocaleDateString()}`);
+                        
                         isPremium = true; 
                         updatePremiumUI(); 
                         closePremiumModal();
