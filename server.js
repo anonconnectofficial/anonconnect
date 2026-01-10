@@ -1,87 +1,137 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, { cors: { origin: "*" } });
-const path = require('path');
-const Razorpay = require('razorpay'); // NEW
-const bodyParser = require('body-parser'); // NEW
+const http = require("http").createServer(app);
+const io = require("socket.io")(http, { cors: { origin: "*" } });
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-// --- 🔴 IMPORTANT: APNI RAZORPAY KEYS YAHAN DALO ---
+// ================== RAZORPAY CONFIG ==================
 const razorpay = new Razorpay({
-    key_id: 'rzp_test_S1af2JV9L5Vlw5', // Razorpay Dashboard se milega
-    key_secret: '83lLuGYa0C5UG9UEwtsnNuWk'
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// SEO Routes
-app.get('/robots.txt', (req, res) => { res.type('text/plain'); res.send("User-agent: *\nAllow: /\nSitemap: http://localhost:3000/sitemap.xml"); });
-app.get('/sitemap.xml', (req, res) => { res.type('application/xml'); res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:3000/</loc><lastmod>${new Date().toISOString().split('T')[0]}</lastmod></url></urlset>`); });
+// ================== ROUTES ==================
 
-// --- REAL PAYMENT API ---
-app.post('/create-order', async (req, res) => {
-    try {
-        const options = {
-            amount: req.body.amount * 100, // Amount in paise (199 * 100)
-            currency: "INR",
-            receipt: "order_rcptid_" + Date.now()
-        };
-        const order = await razorpay.orders.create(options);
-        res.json(order);
-    } catch (error) {
-        res.status(500).send(error);
+// SEO
+app.get("/robots.txt", (req, res) => {
+  res.type("text/plain");
+  res.send("User-agent: *\nAllow: /");
+});
+
+// ✅ CREATE ORDER
+app.post("/create-order", async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount) return res.status(400).json({ error: "Amount required" });
+
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // paise
+      currency: "INR",
+      receipt: "order_" + Date.now(),
+    });
+
+    res.json(order);
+  } catch (err) {
+    console.error("Create Order Error:", err);
+    res.status(500).json({ error: "Order creation failed" });
+  }
+});
+
+// ✅ VERIFY PAYMENT (REAL SIGNATURE CHECK)
+app.post("/verify-payment", (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+      // 👉 Future: DB में premium=true save करना
+      return res.json({ success: true, isPremium: true });
+    } else {
+      return res.status(400).json({ success: false });
     }
+  } catch (err) {
+    console.error("Verify Error:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
-// --- CHAT LOGIC ---
-let queue = []; 
+// ✅ PREMIUM STATUS CHECK (Dummy – Future DB)
+app.post("/check-status", (req, res) => {
+  res.json({ isPremium: false });
+});
 
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-    socket.lastMsgTime = 0;
+// ================== CHAT SOCKET ==================
+let queue = [];
 
-    socket.on('find_partner', (userInfo) => { 
-        socket.userInfo = userInfo || { country: "🌐", nickname: "Stranger", myGender: "male", partnerGender: "random" };
-        queue = queue.filter(s => s.id !== socket.id);
+io.on("connection", (socket) => {
+  socket.lastMsgTime = 0;
 
-        const matchIndex = queue.findIndex(waitingSocket => {
-            const me = socket.userInfo;
-            const them = waitingSocket.userInfo;
-            const condition1 = (me.partnerGender === 'random') || (me.partnerGender === them.myGender);
-            const condition2 = (them.partnerGender === 'random') || (them.partnerGender === me.myGender);
-            return condition1 && condition2;
-        });
+  socket.on("find_partner", (userInfo) => {
+    socket.userInfo =
+      userInfo || { nickname: "Stranger", myGender: "male", partnerGender: "random" };
 
-        if (matchIndex > -1) {
-            const partner = queue.splice(matchIndex, 1)[0];
-            const roomID = socket.id + '#' + partner.id;
-            socket.join(roomID); partner.join(roomID);
-            io.to(partner.id).emit('chat_start', { room: roomID, country: socket.userInfo.country, nickname: socket.userInfo.nickname, gender: socket.userInfo.myGender });
-            io.to(socket.id).emit('chat_start', { room: roomID, country: partner.userInfo.country, nickname: partner.userInfo.nickname, gender: partner.userInfo.myGender });
-        } else {
-            queue.push(socket);
-            socket.emit('waiting');
-        }
+    queue = queue.filter((s) => s.id !== socket.id);
+
+    const matchIndex = queue.findIndex((waiting) => {
+      const me = socket.userInfo;
+      const them = waiting.userInfo;
+      return (
+        (me.partnerGender === "random" || me.partnerGender === them.myGender) &&
+        (them.partnerGender === "random" || them.partnerGender === me.myGender)
+      );
     });
 
-    socket.on('send_message', (data) => {
-        const now = Date.now();
-        if (now - socket.lastMsgTime < 800) return;
-        socket.lastMsgTime = now;
-        socket.to(data.room).emit('receive_message', data.message);
-    });
+    if (matchIndex > -1) {
+      const partner = queue.splice(matchIndex, 1)[0];
+      const room = socket.id + "#" + partner.id;
+      socket.join(room);
+      partner.join(room);
+      socket.emit("chat_start", { room, country: partner.userInfo.country, nickname: partner.userInfo.nickname });
+      partner.emit("chat_start", { room, country: socket.userInfo.country, nickname: socket.userInfo.nickname });
+    } else {
+      queue.push(socket);
+      socket.emit("waiting");
+    }
+  });
 
-    socket.on('typing_start', (room) => socket.to(room).emit('partner_typing'));
-    socket.on('typing_stop', (room) => socket.to(room).emit('partner_stopped_typing'));
-    
-    socket.on('skip_chat', (roomID) => {
-        if(roomID) { socket.to(roomID).emit('partner_left'); socket.leave(roomID); }
-        queue = queue.filter(s => s.id !== socket.id);
-    });
+  socket.on("send_message", (data) => {
+    const now = Date.now();
+    if (now - socket.lastMsgTime < 500) return;
+    socket.lastMsgTime = now;
+    socket.to(data.room).emit("receive_message", data.message);
+  });
 
-    socket.on('disconnect', () => { queue = queue.filter(s => s.id !== socket.id); });
+  socket.on("typing_start", (room) => socket.to(room).emit("partner_typing"));
+  socket.on("typing_stop", (room) => socket.to(room).emit("partner_stopped_typing"));
+
+  socket.on("skip_chat", (room) => {
+    socket.to(room).emit("partner_left");
+    socket.leave(room);
+    queue = queue.filter((s) => s.id !== socket.id);
+  });
+
+  socket.on("disconnect", () => {
+    queue = queue.filter((s) => s.id !== socket.id);
+  });
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => console.log(`Server running at: http://localhost:3000`));
+http.listen(PORT, () => console.log("Server running on", PORT));
