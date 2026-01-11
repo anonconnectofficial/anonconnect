@@ -33,6 +33,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
 
+    <style>
+        /* Inline critical CSS for initial load */
+        body { margin: 0; padding: 0; background: #050505; color: #fff; font-family: 'Outfit', sans-serif; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
@@ -47,17 +52,17 @@
         </ul>
     </nav>
 
-    <!-- 🔥 NEW: REGISTRATION/LOGIN PAGE (STEP 0) -->
+    <!-- 🔥 REGISTRATION PAGE -->
     <div id="step-register" class="screen-container">
         <div class="register-box">
             <div class="icon-header">👋</div>
             <h2>Welcome to AnonConnect</h2>
             <p class="subtitle">Choose how you want to continue</p>
             
-            <!-- User Status Display (Hidden by default, shows after login) -->
+            <!-- User Status Card (shows after login) -->
             <div id="user-status-card" class="hidden" style="background: rgba(0, 242, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(0, 242, 234, 0.3);">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div id="user-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                         👤
                     </div>
                     <div style="flex: 1;">
@@ -83,12 +88,12 @@
                 
                 <p style="font-size: 0.8rem; color: #888; margin-top: 20px; line-height: 1.6;">
                     <i class="fa-solid fa-info-circle"></i> 
-                    <strong>Guest Mode:</strong> Limited to Random chat only.<br>
-                    <strong>Google Login:</strong> Unlock premium features (Male/Female filters).
+                    <strong>Guest Mode:</strong> Random chat only.<br>
+                    <strong>Google Login:</strong> Unlock Male/Female filters with Premium.
                 </p>
             </div>
 
-            <!-- Continue Button (shown after login) -->
+            <!-- Continue Button -->
             <button id="btn-continue-to-safety" class="btn full-width-btn hidden">
                 Continue to Chat <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -126,15 +131,15 @@
             <div class="pref-box">
                 <h2>Set Preferences</h2>
                 
-                <!-- 🔥 NEW: User Info Display -->
+                <!-- User Info Display -->
                 <div class="user-info-banner">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                         <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center;">
                             <i class="fa-solid fa-user"></i>
                         </div>
                         <div>
-                            <div id="pref-user-email" style="font-size: 0.85rem; color: #00f2ea;"></div>
-                            <div id="pref-user-status" style="font-size: 0.75rem; color: #888;"></div>
+                            <div id="pref-user-email" style="font-size: 0.85rem; color: #00f2ea;">Loading...</div>
+                            <div id="pref-user-status" style="font-size: 0.75rem; color: #888;">Checking status...</div>
                         </div>
                     </div>
                 </div>
@@ -150,10 +155,10 @@
                 <div class="input-group">
                     <label>I am a:</label>
                     <div class="my-gender-options">
-                        <div class="my-gender-btn active" id="iam-male" onclick="setMyGender('male')">
+                        <div class="my-gender-btn active" id="iam-male">
                             <i class="fa-solid fa-person"></i> Male
                         </div>
-                        <div class="my-gender-btn" id="iam-female" onclick="setMyGender('female')">
+                        <div class="my-gender-btn" id="iam-female">
                             <i class="fa-solid fa-person-dress"></i> Female
                         </div>
                     </div>
@@ -183,7 +188,7 @@
         </div>
     </div>
 
-    <!-- PAGES -->
+    <!-- BLOG PAGE -->
     <div id="page-blog" class="screen-container hidden scrollable-page">
         <div id="blog-grid-view" class="page-content-box">
             <h1>Latest Updates</h1>
@@ -195,6 +200,7 @@
         </div>
     </div>
     
+    <!-- ABOUT PAGE -->
     <div id="page-about" class="screen-container hidden scrollable-page">
         <div class="page-content-box">
             <h1 class="center-text">About Us</h1>
@@ -205,6 +211,7 @@
         </div>
     </div>
     
+    <!-- SUPPORT PAGE -->
     <div id="page-support" class="screen-container hidden scrollable-page">
         <div class="page-content-box">
             <h1 class="center-text">Support</h1>
@@ -280,7 +287,7 @@
         </div>
     </div>
 
-    <!-- PREMIUM MODALS -->
+    <!-- PREMIUM MODAL -->
     <div id="premium-overlay" class="modal-overlay hidden">
         <div id="modal-pricing" class="modal-box">
             <div class="modal-header">
@@ -315,9 +322,12 @@
         </div>
     </div>
 
-   <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
     
+    <!-- Socket.io CDN -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- Main Script -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
