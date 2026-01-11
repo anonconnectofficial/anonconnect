@@ -641,3 +641,195 @@ nav { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; j
 ::-webkit-scrollbar-track { background: #111; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ===================================== */
+/* PREMIUM CONTENT ADDITIONS             */
+/* ===================================== */
+
+/* About Page Features */
+.about-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin: 40px 0;
+}
+
+.feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 30px;
+    border-radius: 15px;
+    border: 1px solid #222;
+    transition: 0.3s;
+    text-align: center;
+}
+
+.feature-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #00f2ea;
+    transform: translateY(-5px);
+}
+
+.f-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.feature-card p {
+    color: #aaa;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+/* About Story Section */
+.about-story {
+    background: linear-gradient(145deg, rgba(0, 242, 234, 0.05), rgba(0, 0, 0, 0.5));
+    padding: 40px;
+    border-radius: 20px;
+    border-left: 4px solid #00f2ea;
+    margin-top: 50px;
+}
+
+.about-story h3 {
+    color: #00f2ea;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.about-story p {
+    color: #ccc;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* Stats Grid */
+.about-stats {
+    margin-top: 50px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid #222;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 242, 234, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 242, 234, 0.2);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #00f2ea;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* Support Page */
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    background: rgba(0, 242, 234, 0.1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+}
+
+.icon-circle i {
+    font-size: 2rem;
+    color: #00f2ea;
+}
+
+/* FAQ Grid */
+.faq-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 25px;
+    border-radius: 12px;
+    border-left: 3px solid #00f2ea;
+    transition: 0.3s;
+}
+
+.faq-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px);
+}
+
+.faq-item h4 {
+    color: #fff;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.faq-item p {
+    color: #aaa;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Landing Mini Features */
+.features-mini {
+    animation: fadeInUp 0.8s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Crown Icon Animation */
+.crown-icon {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .about-features {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .about-story {
+        padding: 25px;
+    }
+}
+
