@@ -15,10 +15,10 @@ const path = require("path");
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // ============================================
-// 🔥 MONGODB CONNECTION
+// MONGODB CONNECTION
 // ============================================
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || "your_mongodb_connection_string_here";
 const client = new MongoClient(MONGO_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -39,12 +39,12 @@ async function connectDB() {
     db = client.db("anonconnect");
     usersCollection = db.collection("users");
     
-    // Create index on email for faster queries
+    // Create index on email
     await usersCollection.createIndex({ email: 1 }, { unique: true });
     
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error);
-    process.exit(1);
+    // Don't exit - continue without DB for testing
   }
 }
 
@@ -68,7 +68,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ================== RAZORPAY CONFIG ==================
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_S1af2JV9L5Vlw5",
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_secret: process.env.RAZORPAY_KEY_SECRET || "your_razorpay_secret_here",
 });
 
 // ================== ROUTES ==================
@@ -86,7 +86,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// ✅ CREATE ORDER
+// CREATE ORDER
 app.post("/create-order", async (req, res) => {
   try {
     console.log("📦 Create Order Request:", req.body);
@@ -95,11 +95,6 @@ app.post("/create-order", async (req, res) => {
     
     if (!amount) {
       return res.status(400).json({ error: "Amount required" });
-    }
-
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      console.error("❌ RAZORPAY_KEY_SECRET not set");
-      return res.status(500).json({ error: "Payment gateway not configured" });
     }
 
     const order = await razorpay.orders.create({
@@ -120,10 +115,10 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-// ✅ VERIFY PAYMENT & SAVE TO DATABASE
+// VERIFY PAYMENT
 app.post("/verify-payment", async (req, res) => {
   try {
-    console.log("🔐 Verify Payment Request:", req.body);
+    console.log("🔐 Verify Payment Request");
     
     const {
       razorpay_order_id,
@@ -140,59 +135,50 @@ app.post("/verify-payment", async (req, res) => {
       });
     }
 
-    if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Email required" 
-      });
-    }
-
-    // 🔥 Prevent guest users from upgrading
-    if (email.startsWith('guest_')) {
+    if (!email || email.startsWith('guest_')) {
       return res.status(400).json({
         success: false,
-        error: "Guest accounts cannot purchase premium. Please login with Google."
+        error: "Guest accounts cannot purchase premium"
       });
     }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-
     const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "your_secret")
       .update(body)
       .digest("hex");
 
     if (expectedSignature === razorpay_signature) {
       console.log("✅ Payment Verified for:", email);
       
-      // Calculate expiry date (1 month from now)
       const expiryDate = new Date();
       expiryDate.setMonth(expiryDate.getMonth() + 1);
       
-      // Save/Update user in database
-      await usersCollection.updateOne(
-        { email: email },
-        { 
-          $set: { 
-            isPremium: true,
-            plan: plan,
-            paymentId: razorpay_payment_id,
-            orderId: razorpay_order_id,
-            purchaseDate: new Date(),
-            expiryDate: expiryDate,
-            lastUpdated: new Date()
-          }
-        },
-        { upsert: true } // Create if doesn't exist
-      );
-      
-      console.log("💾 Saved to database:", email, "Plan:", plan, "Expires:", expiryDate);
+      if (usersCollection) {
+        await usersCollection.updateOne(
+          { email: email },
+          { 
+            $set: { 
+              isPremium: true,
+              plan: plan,
+              paymentId: razorpay_payment_id,
+              orderId: razorpay_order_id,
+              purchaseDate: new Date(),
+              expiryDate: expiryDate,
+              lastUpdated: new Date()
+            }
+          },
+          { upsert: true }
+        );
+        
+        console.log("💾 Saved to database");
+      }
       
       return res.json({ 
         success: true, 
         isPremium: true,
         expiryDate: expiryDate,
-        message: "Payment verified & premium activated!" 
+        message: "Payment verified!" 
       });
       
     } else {
@@ -207,48 +193,41 @@ app.post("/verify-payment", async (req, res) => {
     console.error("❌ Verify Error:", err);
     res.status(500).json({ 
       success: false,
-      error: "Verification failed",
-      details: err.message
+      error: "Verification failed"
     });
   }
 });
 
-// ✅ CHECK PREMIUM STATUS FROM DATABASE
+// CHECK PREMIUM STATUS
 app.post("/check-status", async (req, res) => {
   try {
-    console.log("📊 Status Check Request:", req.body);
-    
     const { email } = req.body;
     
     if (!email) {
       return res.json({ isPremium: false });
     }
 
-    // 🔥 Guest users are never premium
     if (email.startsWith('guest_')) {
       return res.json({ 
         isPremium: false,
-        isGuest: true,
-        message: "Guest mode - limited features"
+        isGuest: true
       });
     }
     
-    // Find user in database
-    const user = await usersCollection.findOne({ email: email });
-    
-    if (!user) {
-      console.log("❌ User not found:", email);
+    if (!usersCollection) {
       return res.json({ isPremium: false });
     }
     
-    // Check if premium is expired
+    const user = await usersCollection.findOne({ email: email });
+    
+    if (!user) {
+      return res.json({ isPremium: false });
+    }
+    
     const now = new Date();
     const isExpired = user.expiryDate && new Date(user.expiryDate) < now;
     
     if (isExpired) {
-      console.log("⏰ Premium expired for:", email);
-      
-      // Update database to mark as expired
       await usersCollection.updateOne(
         { email: email },
         { $set: { isPremium: false, lastUpdated: new Date() } }
@@ -260,8 +239,6 @@ app.post("/check-status", async (req, res) => {
         expiryDate: user.expiryDate 
       });
     }
-    
-    console.log("✅ Premium active for:", email, "Expires:", user.expiryDate);
     
     return res.json({ 
       isPremium: user.isPremium || false,
@@ -276,19 +253,6 @@ app.post("/check-status", async (req, res) => {
   }
 });
 
-// ✅ GET ALL PREMIUM USERS (Admin Only)
-app.get("/admin/users", async (req, res) => {
-  try {
-    const users = await usersCollection.find({ isPremium: true }).toArray();
-    res.json({ 
-      total: users.length,
-      users: users 
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ================== CHAT SOCKET ==================
 let queue = [];
 
@@ -300,50 +264,34 @@ io.on("connection", (socket) => {
     socket.userInfo = userInfo || { 
       nickname: "Stranger", 
       myGender: "male", 
-      partnerGender: "random",
-      isPremium: false,
-      isGuest: true
+      partnerGender: "random"
     };
 
-    // 🔥 SERVER-SIDE PREMIUM VALIDATION
-    // Only allow non-random gender filters if user has premium
+    // SERVER-SIDE VALIDATION
     if (userInfo.partnerGender !== 'random') {
-      // Check if it's a guest
       if (userInfo.isGuest || !userInfo.email || userInfo.email.startsWith('guest_')) {
-        console.log("⚠️ Guest attempted gender filter:", socket.id);
-        socket.userInfo.partnerGender = 'random'; // Force random
+        socket.userInfo.partnerGender = 'random';
         socket.emit('premium_required', { 
-          message: 'Gender filters require Google login & Premium subscription' 
+          message: 'Gender filters require Google login & Premium' 
         });
-      } 
-      // Check if user has valid premium status
-      else if (!userInfo.isPremium) {
-        // Double-check with database
+      } else if (!userInfo.isPremium && usersCollection) {
         try {
           const user = await usersCollection.findOne({ email: userInfo.email });
           
           if (!user || !user.isPremium) {
-            console.log("⚠️ Non-premium user attempted gender filter:", userInfo.email);
-            socket.userInfo.partnerGender = 'random'; // Force random
+            socket.userInfo.partnerGender = 'random';
             socket.emit('premium_required', { 
-              message: 'Premium subscription required for Male/Female filters' 
+              message: 'Premium subscription required for filters' 
             });
-          } else {
-            console.log("✅ Premium validated for:", userInfo.email);
           }
         } catch (err) {
-          console.error("❌ Database check failed:", err);
           socket.userInfo.partnerGender = 'random';
         }
-      } else {
-        console.log("✅ Premium user using gender filter:", userInfo.email);
       }
     }
 
-    // Remove from queue if already waiting
     queue = queue.filter((s) => s.id !== socket.id);
 
-    // Try to find a match
     const matchIndex = queue.findIndex((waiting) => {
       const me = socket.userInfo;
       const them = waiting.userInfo;
@@ -361,23 +309,21 @@ io.on("connection", (socket) => {
       
       socket.emit("chat_start", { 
         room, 
-        country: partner.userInfo.country, 
-        nickname: partner.userInfo.nickname 
+        country: partner.userInfo.country || "🌐", 
+        nickname: partner.userInfo.nickname || "Stranger"
       });
       
       partner.emit("chat_start", { 
         room, 
-        country: socket.userInfo.country, 
-        nickname: socket.userInfo.nickname 
+        country: socket.userInfo.country || "🌐", 
+        nickname: socket.userInfo.nickname || "Stranger"
       });
       
       console.log("✅ Match found:", socket.id, "↔", partner.id);
-      console.log("   User 1:", socket.userInfo.email || 'guest', "(", socket.userInfo.partnerGender, ")");
-      console.log("   User 2:", partner.userInfo.email || 'guest', "(", partner.userInfo.partnerGender, ")");
     } else {
       queue.push(socket);
       socket.emit("waiting");
-      console.log("⏳ User waiting:", socket.id, "(", socket.userInfo.partnerGender, ")");
+      console.log("⏳ User waiting:", socket.id);
     }
   });
 
@@ -405,8 +351,8 @@ io.on("connection", (socket) => {
 
 // ================== GRACEFUL SHUTDOWN ==================
 process.on('SIGINT', async () => {
-  console.log('🛑 Shutting down gracefully...');
-  await client.close();
+  console.log('🛑 Shutting down...');
+  if (client) await client.close();
   process.exit(0);
 });
 
@@ -414,7 +360,6 @@ process.on('SIGINT', async () => {
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log("🚀 Server running on port", PORT);
-  console.log("🔑 Razorpay Key ID:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Missing ❌");
-  console.log("🔒 Razorpay Secret:", process.env.RAZORPAY_KEY_SECRET ? "Set ✅" : "Missing ❌");
-  console.log("🗄️  MongoDB:", MONGO_URI ? "Configured ✅" : "Missing ❌");
+  console.log("🔑 Razorpay:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Not Set ⚠️");
+  console.log("🗄️  MongoDB:", db ? "Connected ✅" : "Not Connected ⚠️");
 });
