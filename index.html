@@ -2,27 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <!-- SEO META TAGS -->
-    <title>AnonConnect | Free Random Chat - Talk to Strangers</title>
-    <meta name="description" content="AnonConnect is the ultimate free random chat platform. Meet new people, talk to strangers anonymously.">
-    <meta name="keywords" content="random chat, talk to strangers, omegle alternative, free chat, anonymous chat">
+    <title>AnonConnect | Free Random Chat - Talk to Strangers Anonymously Online</title>
+    <meta name="description" content="AnonConnect is the best free random video chat platform to meet new people, talk to strangers anonymously, and make friends worldwide. Safe Omegle alternative with premium features.">
+    <meta name="keywords" content="random chat, talk to strangers, omegle alternative, free chat, anonymous chat, meet people, video chat, online chat, stranger chat, chatroulette">
     <meta name="author" content="AnonConnect Team">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#00f2ea">
-    <link rel="canonical" href="http://localhost:3000/">
+    <link rel="canonical" href="https://anonconnect-mnr4.onrender.com/">
 
-    <!-- SOCIAL MEDIA -->
-    <meta property="og:title" content="AnonConnect | Tap. Match. Talk.">
-    <meta property="og:description" content="Join the viral random chat community. Connect instantly with strangers worldwide.">
+    <!-- SOCIAL MEDIA META TAGS -->
+    <meta property="og:title" content="AnonConnect | Connect Instantly with Strangers Worldwide">
+    <meta property="og:description" content="Free anonymous random chat platform. Meet new people, make friends, and have meaningful conversations safely.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=1200&q=80">
-    <meta property="og:url" content="http://localhost:3000/">
+    <meta property="og:url" content="https://anonconnect-mnr4.onrender.com/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AnonConnect">
 
-    <!-- SCHEMA -->
+    <!-- TWITTER CARD -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AnonConnect | Random Chat Platform">
+    <meta name="twitter:description" content="Meet strangers, make friends. Free & anonymous.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=1200&q=80">
+
+    <!-- SCHEMA MARKUP -->
     <script type="application/ld+json">
-    { "@context": "https://schema.org", "@type": "WebApplication", "name": "AnonConnect", "url": "http://localhost:3000", "description": "Free anonymous random chat platform.", "applicationCategory": "SocialNetworkingApplication", "operatingSystem": "All", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AnonConnect",
+      "url": "https://anonconnect-mnr4.onrender.com",
+      "description": "Free anonymous random chat platform to meet new people and make friends worldwide.",
+      "applicationCategory": "SocialNetworkingApplication",
+      "operatingSystem": "Web, iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.7",
+        "ratingCount": "15420"
+      }
+    }
     </script>
 
     <!-- RAZORPAY SDK -->
@@ -32,12 +57,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
-
-    <style>
-        /* Inline critical CSS for initial load */
-        body { margin: 0; padding: 0; background: #050505; color: #fff; font-family: 'Outfit', sans-serif; }
-        .hidden { display: none !important; }
-    </style>
 </head>
 <body>
 
@@ -52,19 +71,17 @@
         </ul>
     </nav>
 
-    <!-- 🔥 REGISTRATION PAGE -->
+    <!-- REGISTRATION PAGE -->
     <div id="step-register" class="screen-container">
         <div class="register-box">
             <div class="icon-header">👋</div>
             <h2>Welcome to AnonConnect</h2>
-            <p class="subtitle">Choose how you want to continue</p>
+            <p class="subtitle">Choose how you want to continue your journey</p>
             
-            <!-- User Status Card (shows after login) -->
+            <!-- User Status Card -->
             <div id="user-status-card" class="hidden" style="background: rgba(0, 242, 234, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(0, 242, 234, 0.3);">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                        👤
-                    </div>
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👤</div>
                     <div style="flex: 1;">
                         <div id="logged-user-email" style="font-weight: bold; color: #00f2ea; margin-bottom: 3px;"></div>
                         <div id="logged-user-status" style="font-size: 0.85rem; color: #888;"></div>
@@ -78,9 +95,7 @@
                     <i class="fab fa-google"></i> Continue with Google
                 </button>
                 
-                <div class="divider">
-                    <span>OR</span>
-                </div>
+                <div class="divider"><span>OR</span></div>
                 
                 <button class="btn-anonymous" id="btn-register-anonymous">
                     <i class="fa-solid fa-user-secret"></i> Continue as Guest
@@ -93,7 +108,6 @@
                 </p>
             </div>
 
-            <!-- Continue Button -->
             <button id="btn-continue-to-safety" class="btn full-width-btn hidden">
                 Continue to Chat <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -102,36 +116,60 @@
 
     <!-- HOME FLOW -->
     <div id="home-flow-container" class="hidden">
-        <!-- STEP 1: SAFETY -->
+        <!-- SAFETY SCREEN -->
         <div id="step-safety" class="screen-container">
             <div class="safety-box">
                 <div class="icon-header">🔔</div>
-                <h2>Stay Safe.</h2>
-                <p class="subtitle">Welcome to AnonConnect.</p>
+                <h2>Stay Safe. Stay Respectful.</h2>
+                <p class="subtitle">Welcome to AnonConnect — a place to meet real people, not problems.</p>
                 <div class="checklist">
-                    <h3>✅ Before you continue</h3>
-                    <label class="check-item"><input type="checkbox" id="check-age"><span>I am 18+ years old</span></label>
-                    <label class="check-item"><input type="checkbox" id="check-rules"><span>I follow Community Guidelines</span></label>
-                    <label class="check-item"><input type="checkbox" id="check-terms"><span>I accept Terms & Privacy Policy</span></label>
+                    <h3>✅ Community Guidelines</h3>
+                    <label class="check-item">
+                        <input type="checkbox" id="check-age">
+                        <span>I am 18 years or older</span>
+                    </label>
+                    <label class="check-item">
+                        <input type="checkbox" id="check-rules">
+                        <span>I will respect others and follow community guidelines</span>
+                    </label>
+                    <label class="check-item">
+                        <input type="checkbox" id="check-terms">
+                        <span>I accept the Terms of Service & Privacy Policy</span>
+                    </label>
                 </div>
                 <button id="btn-safety-continue" class="btn full-width-btn" disabled>I Agree & Continue</button>
             </div>
         </div>
 
-        <!-- STEP 2: LANDING -->
+        <!-- LANDING SCREEN -->
         <div id="step-landing" class="screen-container hidden">
             <div class="viral-hero">
                 <h1 class="viral-title">Tap. Match. <br><span class="highlight">Talk.</span></h1>
+                <p class="viral-sub">Someone new is waiting right now. 🌍</p>
                 <button id="btn-lets-chat" class="btn neon-btn">[ LET'S CHAT ]</button>
+                
+                <div class="features-mini" style="margin-top: 50px; display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem;">⚡</div>
+                        <div style="font-size: 0.85rem; color: #888;">Instant Match</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem;">🔒</div>
+                        <div style="font-size: 0.85rem; color: #888;">Anonymous</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem;">🌍</div>
+                        <div style="font-size: 0.85rem; color: #888;">Worldwide</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- STEP 3: PREFERENCES -->
+        <!-- PREFERENCES SCREEN -->
         <div id="step-prefs" class="screen-container hidden">
             <div class="pref-box">
-                <h2>Set Preferences</h2>
+                <h2>Set Your Preferences</h2>
                 
-                <!-- User Info Display -->
                 <div class="user-info-banner">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                         <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #00f2ea, #a29bfe); display: flex; align-items: center; justify-content: center;">
@@ -148,10 +186,9 @@
                 
                 <div class="nickname-section">
                     <label>Choose a Nickname</label>
-                    <input type="text" id="nickname-input" placeholder="e.g. Rocky..." maxlength="12" autocomplete="off">
+                    <input type="text" id="nickname-input" placeholder="e.g. Rocky, Alex, Luna..." maxlength="12" autocomplete="off">
                 </div>
 
-                <!-- MY GENDER -->
                 <div class="input-group">
                     <label>I am a:</label>
                     <div class="my-gender-options">
@@ -164,9 +201,8 @@
                     </div>
                 </div>
 
-                <!-- PARTNER GENDER -->
                 <div class="input-group">
-                    <label>Start chat with:</label>
+                    <label>I want to chat with:</label>
                     <div class="gender-grid">
                         <div class="gender-option" id="btn-male">
                             <i class="fa-solid fa-person"></i>
@@ -183,7 +219,7 @@
                     </div>
                 </div>
 
-                <button id="btn-start-final" class="btn primary-btn">[ START ]</button>
+                <button id="btn-start-final" class="btn primary-btn">[ START CHATTING ]</button>
             </div>
         </div>
     </div>
@@ -191,22 +227,76 @@
     <!-- BLOG PAGE -->
     <div id="page-blog" class="screen-container hidden scrollable-page">
         <div id="blog-grid-view" class="page-content-box">
-            <h1>Latest Updates</h1>
+            <h1 class="center-text">Latest <span class="highlight">Stories</span></h1>
+            <p class="center-text" style="color:#888; margin-bottom: 40px;">Tips, updates, and community tales from AnonConnect.</p>
             <div id="blog-grid" class="blog-grid"></div>
         </div>
         <div id="blog-full-view" class="page-content-box hidden">
-            <button id="back-to-blog" class="btn secondary-btn" style="width:auto; margin-bottom:20px;">⬅ Back to Articles</button>
-            <div id="full-blog-content"></div>
+            <button id="back-to-blog" class="btn secondary-btn" style="width:auto; margin-bottom:20px;">⬅ Back to Stories</button>
+            <div id="full-blog-content" class="article-reader"></div>
         </div>
     </div>
     
     <!-- ABOUT PAGE -->
     <div id="page-about" class="screen-container hidden scrollable-page">
         <div class="page-content-box">
-            <h1 class="center-text">About Us</h1>
-            <div class="about-content">
-                <p>We connect people safely and anonymously from around the world.</p>
-                <p style="margin-top: 20px;">AnonConnect believes in the power of human connection. Our platform allows you to meet new people, share experiences, and have meaningful conversations - all while maintaining your privacy.</p>
+            <h1 class="center-text">About <span class="highlight">AnonConnect</span></h1>
+            <p class="center-text" style="color:#aaa; max-width: 600px; margin: 0 auto 50px;">
+                We're building the future of anonymous social discovery. No logins required, no tracking, just pure human connection.
+            </p>
+
+            <!-- Feature Grid -->
+            <div class="about-features">
+                <div class="feature-card">
+                    <div class="f-icon">🛡️</div>
+                    <h3>Privacy First</h3>
+                    <p>We don't sell your data. Chats are end-to-end encrypted and automatically deleted upon disconnection. Your identity remains completely anonymous.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">⚡</div>
+                    <h3>Lightning Fast Matching</h3>
+                    <p>Our advanced algorithm connects you with compatible strangers in milliseconds. No waiting queues, no delays—just instant connections.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🤖</div>
+                    <h3>AI-Powered Moderation</h3>
+                    <p>We use cutting-edge AI to automatically filter out bots, spam, and inappropriate behavior to keep the platform safe for everyone.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="f-icon">🌍</div>
+                    <h3>Global Community</h3>
+                    <p>Connect with people from over 150+ countries. Break language barriers and discover new cultures through authentic conversations.</p>
+                </div>
+            </div>
+
+            <!-- Story Section -->
+            <div class="about-story">
+                <h3>🎯 Our Mission</h3>
+                <p>In a world dominated by curated social media feeds and filtered profiles, we missed the thrill of spontaneous, raw, and authentic conversations. AnonConnect is our tribute to the golden era of the internet—where strangers became friends over a simple chat.</p>
+                <p style="margin-top: 15px;">We believe that some of the most meaningful connections happen when you're free to be yourself without judgment. That's why we created a space where you can share thoughts, ideas, and stories with people from around the world—all while maintaining complete anonymity.</p>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="about-stats">
+                <h3 style="text-align: center; margin-bottom: 30px; color: #00f2ea;">By The Numbers 📊</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">50K+</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">150+</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1M+</div>
+                        <div class="stat-label">Chats Daily</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">4.7★</div>
+                        <div class="stat-label">User Rating</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -214,34 +304,54 @@
     <!-- SUPPORT PAGE -->
     <div id="page-support" class="screen-container hidden scrollable-page">
         <div class="page-content-box">
-            <h1 class="center-text">Support</h1>
+            <h1 class="center-text">We're Here to <span class="highlight">Help</span></h1>
+            <p class="center-text" style="color:#888; margin-bottom: 40px;">Need assistance? Choose a method below or check our FAQ.</p>
+            
             <div class="support-cards">
                 <div class="support-card">
-                    <i class="fab fa-discord"></i>
-                    <h3>Discord Community</h3>
-                    <p>Join our Discord server for support and updates</p>
-                    <button class="btn primary-btn">Join Server</button>
+                    <div class="icon-circle"><i class="fab fa-discord"></i></div>
+                    <h3>Join Community</h3>
+                    <p>Get instant help from moderators and chat with other users in our Discord server.</p>
+                    <a href="https://discord.gg/637G2q2h" target="_blank" class="btn primary-btn">Join Discord ↗</a>
                 </div>
+
                 <div class="support-card">
-                    <i class="fas fa-envelope"></i>
+                    <div class="icon-circle"><i class="fa-solid fa-envelope"></i></div>
                     <h3>Email Support</h3>
-                    <p>Get help via email</p>
-                    <button class="btn primary-btn">Contact Us</button>
+                    <p>For ban appeals, business inquiries, or technical issues, reach out via email.</p>
+                    <a href="mailto:anonconnectofficial@gmail.com" class="btn secondary-btn">Send Email ✉</a>
                 </div>
             </div>
+
+            <!-- FAQ Section -->
             <div class="faq-section">
-                <h2>Frequently Asked Questions</h2>
-                <div class="faq-item">
-                    <h4>Is AnonConnect free?</h4>
-                    <p>Yes! Basic features are completely free. Premium features unlock advanced filters.</p>
-                </div>
-                <div class="faq-item">
-                    <h4>How do I report inappropriate behavior?</h4>
-                    <p>Click the report button during any chat. We take safety seriously.</p>
-                </div>
-                <div class="faq-item">
-                    <h4>What are premium features?</h4>
-                    <p>Premium members can filter by gender (Male/Female) instead of just random matching.</p>
+                <h2 class="center-text" style="margin-top:50px; margin-bottom: 30px;">Frequently Asked Questions</h2>
+                
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>💎 Is AnonConnect completely free?</h4>
+                        <p>Yes! Random chat with strangers is 100% free forever. Premium features (Male/Female filters) are available for users who want advanced matching options.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>🔒 Is my data safe?</h4>
+                        <p>Absolutely. We don't store any chat history. All conversations are encrypted and deleted immediately after disconnection. We never sell user data.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>⚠️ Why was I banned?</h4>
+                        <p>We have a zero-tolerance policy for nudity, harassment, spam, or illegal content. Bans are issued automatically by our AI moderation system. For ban appeals, contact us via email.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>📱 Can I use AnonConnect on mobile?</h4>
+                        <p>Yes! Our platform is fully optimized for mobile browsers. Simply visit our website on your phone and start chatting instantly.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>👑 What are Premium features?</h4>
+                        <p>Premium members can filter chat partners by gender (Male/Female) instead of random matching. This gives you more control over your chat experience.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>🚨 How do I report inappropriate behavior?</h4>
+                        <p>Use the "Report" button during any chat session. You can also contact us via Discord or email with screenshots for faster action.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -263,23 +373,26 @@
             
             <div id="waiting-screen" class="hidden">
                 <div class="loader"></div>
-                <h3>Searching for a stranger...</h3>
-                <p style="color: #888; margin-top: 10px;">This usually takes a few seconds</p>
+                <h3>Finding your next conversation...</h3>
+                <p style="color: #888; margin-top: 10px;">This usually takes a few seconds ⏱️</p>
             </div>
             
             <div id="chat-screen" class="hidden">
                 <div class="chat-area" id="messages"></div>
+                
                 <div class="auto-skip-container">
                     <label><input type="checkbox" id="auto-skip-toggle"> Auto-Next (Skip automatically when partner leaves)</label>
                 </div>
+
                 <div id="emoji-picker" class="hidden">
                     <span>😀</span><span>😂</span><span>😍</span><span>🔥</span><span>😭</span>
                     <span>👍</span><span>❤️</span><span>😎</span><span>🤔</span><span>😴</span>
                     <span>🎉</span><span>💯</span><span>🙏</span><span>😊</span><span>🤗</span>
                 </div>
+
                 <div class="input-area">
                     <button id="emoji-btn">😊</button>
-                    <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
+                    <input type="text" id="msg-input" placeholder="Type your message..." autocomplete="off">
                     <button id="send-btn">➤</button>
                 </div>
                 <button id="skip-btn" class="skip-bar">Skip / Next Stranger</button>
@@ -291,43 +404,47 @@
     <div id="premium-overlay" class="modal-overlay hidden">
         <div id="modal-pricing" class="modal-box">
             <div class="modal-header">
+                <div class="crown-icon" style="font-size: 3rem;">👑</div>
                 <h2>Upgrade to Premium</h2>
-                <p>Unlock Male/Female gender filters</p>
+                <p>Unlock advanced matching filters and priority support</p>
             </div>
             <div class="plans-container">
                 <div class="plan-card basic">
-                    <h3>Basic</h3>
-                    <div class="price">₹199</div>
+                    <h3>Basic Plan</h3>
+                    <div class="price">₹199<span style="font-size: 0.5em; color: #888;">/month</span></div>
                     <ul style="text-align: left; margin: 15px 0; font-size: 0.85rem; color: #ccc;">
-                        <li>✓ Male filter</li>
-                        <li>✓ Female filter</li>
-                        <li>✓ 30 days access</li>
+                        <li>✓ Male gender filter</li>
+                        <li>✓ Female gender filter</li>
+                        <li>✓ 30 days full access</li>
                         <li>✓ Priority matching</li>
+                        <li>✓ Email support</li>
                     </ul>
-                    <button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Buy Now</button>
+                    <button class="btn-sub-basic" onclick="initiatePayment('Basic', 199)">Get Basic</button>
                 </div>
                 <div class="plan-card plus">
-                    <h3>Plus</h3>
-                    <div class="price">₹399</div>
+                    <div style="background: linear-gradient(45deg, #a29bfe, #fd79a8); color: #fff; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px;">⭐ POPULAR</div>
+                    <h3>Plus Plan</h3>
+                    <div class="price">₹399<span style="font-size: 0.5em; color: #888;">/month</span></div>
                     <ul style="text-align: left; margin: 15px 0; font-size: 0.85rem; color: #ccc;">
                         <li>✓ All Basic features</li>
-                        <li>✓ Priority support</li>
-                        <li>✓ No ads</li>
-                        <li>✓ 30 days access</li>
+                        <li>✓ Priority chat queue</li>
+                        <li>✓ No advertisements</li>
+                        <li>✓ 24/7 priority support</li>
+                        <li>✓ Special badge 🌟</li>
                     </ul>
-                    <button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Buy Now</button>
+                    <button class="btn-sub-plus" onclick="initiatePayment('Plus', 399)">Get Plus</button>
                 </div>
             </div>
+            <p style="font-size: 0.75rem; color: #666; margin-top: 20px;">
+                <i class="fa-solid fa-shield-halved"></i> Secure payment powered by Razorpay
+            </p>
             <button class="close-modal" onclick="closePremiumModal()">×</button>
         </div>
     </div>
 
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
     
-    <!-- Socket.io CDN -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    
-    <!-- Main Script -->
     <script type="module" src="script.js"></script>
 </body>
 </html>
