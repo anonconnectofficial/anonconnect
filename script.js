@@ -321,18 +321,59 @@ function filterMessage(text) {
 
 const blogPosts = [
     {
-        title: "5 Tips to Stay Safe",
-        desc: "Learn how to protect your identity.",
-        date: "Today",
+        title: "10 Safety Tips for Anonymous Chatting",
+        desc: "Essential guidelines to protect yourself while meeting strangers online.",
+        date: "Jan 10, 2026",
         color: "linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%)",
-        content: `<h2>Safety First!</h2><p>Never share personal info.</p>`
+        content: `
+            <h2>🛡️ Stay Safe While Chatting with Strangers</h2>
+            <p>Anonymous chatting can be fun and exciting, but safety should always come first. Here are 10 essential tips:</p>
+            <h3>1. Never Share Personal Information</h3>
+            <p>Avoid sharing your full name, phone number, address, school, or workplace with strangers.</p>
+            <h3>2. Use a Nickname</h3>
+            <p>Always use a pseudonym instead of your real name to maintain anonymity.</p>
+            <h3>3. Trust Your Instincts</h3>
+            <p>If something feels off, skip the chat immediately. Your safety is more important than any conversation.</p>
+            <h3>4. Report Inappropriate Behavior</h3>
+            <p>Use our report feature if someone is being abusive, harassing, or sharing inappropriate content.</p>
+            <h3>5. Don't Click Suspicious Links</h3>
+            <p>Never click on links sent by strangers—they could be phishing attempts or malware.</p>
+        `
     },
     {
-        title: "Why Anonymous Chat is Viral?",
-        desc: "The psychology behind it.",
-        date: "Yesterday",
+        title: "Why Anonymous Chat is Going Viral in 2026",
+        desc: "The psychology behind the random chat phenomenon and why millions are joining.",
+        date: "Jan 8, 2026",
         color: "linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)",
-        content: `<h2>The Thrill</h2><p>Spontaneity is key.</p>`
+        content: `
+            <h2>📈 The Rise of Anonymous Chat Platforms</h2>
+            <p>In an era dominated by curated social media profiles, anonymous chat platforms like AnonConnect are experiencing explosive growth. Here's why:</p>
+            <h3>Authenticity Over Perfection</h3>
+            <p>People are tired of fake Instagram lives. Anonymous chat allows genuine, unfiltered conversations without the pressure of maintaining a perfect image.</p>
+            <h3>The Thrill of the Unknown</h3>
+            <p>There's something exciting about not knowing who you'll meet next. This element of surprise keeps users coming back.</p>
+            <h3>Breaking Social Barriers</h3>
+            <p>Anonymity removes social hierarchies, allowing people to connect based purely on personality and conversation—not looks, status, or followers.</p>
+        `
+    },
+    {
+        title: "Premium Features: Are They Worth It?",
+        desc: "A detailed breakdown of AnonConnect Premium benefits and who should upgrade.",
+        date: "Jan 5, 2026",
+        color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        content: `
+            <h2>👑 Should You Upgrade to Premium?</h2>
+            <p>AnonConnect's premium plans offer advanced features for users who want more control over their chat experience.</p>
+            <h3>What You Get with Premium</h3>
+            <ul>
+                <li><strong>Gender Filters:</strong> Choose to chat specifically with males or females instead of random matching.</li>
+                <li><strong>Priority Matching:</strong> Get connected faster with shorter wait times.</li>
+                <li><strong>Ad-Free Experience:</strong> No interruptions while chatting (Plus Plan).</li>
+                <li><strong>Premium Support:</strong> Get help faster with priority customer service.</li>
+            </ul>
+            <h3>Who Should Upgrade?</h3>
+            <p>If you're a frequent user who values having control over who you match with, Premium is definitely worth it. The gender filter alone can save you hours of skipping through random matches.</p>
+        `
     }
 ];
 
@@ -603,3 +644,4 @@ socket.on('premium_required', (data) => {
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
 });
+
