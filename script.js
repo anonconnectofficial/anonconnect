@@ -1,365 +1,605 @@
-const express = require("express");
-const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http, { 
-  cors: { 
-    origin: "*",
-    methods: ["GET", "POST"]
-  } 
-});
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const path = require("path");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
+
+// FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyBAcMFyEYqptJpoZiNqF67gGrqXXwiEFH0",
+  authDomain: "anonconnect-14b47.firebaseapp.com",
+  projectId: "anonconnect-14b47",
+  storageBucket: "anonconnect-14b47.firebasestorage.app",
+  messagingSenderId: "850807807314",
+  appId: "1:850807807314:web:95a2cd8451e017b11b2e8b",
+  measurementId: "G-HJNS7HTRWN"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// SERVER URL - CHANGE THIS if running locally
+const BACKEND_URL = "https://anonconnect-mnr4.onrender.com";
+// For local testing use: const BACKEND_URL = "http://localhost:3000";
+
+const socket = io(BACKEND_URL);
+
+// STATE VARIABLES
+let currentRoom = null;
+let typingTimeout = null;
+let myCountryFlag = "🌐";
+let isPremium = false;
+let selectedPartnerGender = 'random';
+let myGender = 'male';
+let userEmail = null;
+let isGuest = false;
+let isMuted = false;
+
+// DOM ELEMENTS - With null checks
+const getEl = (id) => document.getElementById(id);
+
+const stepRegister = getEl('step-register');
+const homeFlowContainer = getEl('home-flow-container');
+const pageBlog = getEl('page-blog');
+const pageAbout = getEl('page-about');
+const pageSupport = getEl('page-support');
+const pageChat = getEl('page-chat');
+const waitingScreen = getEl('waiting-screen');
+const chatScreen = getEl('chat-screen');
+const messagesDiv = getEl('messages');
+const statusText = getEl('status-text');
+const nicknameInput = getEl('nickname-input');
+const msgInput = getEl('msg-input');
+const premiumStatusBadge = getEl('premium-status-badge');
+const overlay = getEl('premium-overlay');
+const modalPricing = getEl('modal-pricing');
+const notifSound = getEl('notif-sound');
+
+// Registration elements
+const btnRegisterGoogle = getEl('btn-register-google');
+const btnRegisterAnonymous = getEl('btn-register-anonymous');
+const btnContinueToSafety = getEl('btn-continue-to-safety');
+const userStatusCard = getEl('user-status-card');
+const loginOptions = getEl('login-options');
+const loggedUserEmail = getEl('logged-user-email');
+const loggedUserStatus = getEl('logged-user-status');
+const prefUserEmail = getEl('pref-user-email');
+const prefUserStatus = getEl('pref-user-status');
+
+// Gender buttons
+const btnMale = getEl('btn-male');
+const btnFemale = getEl('btn-female');
+const btnRandom = getEl('btn-random');
+const btnIamMale = getEl('iam-male');
+const btnIamFemale = getEl('iam-female');
 
 // ============================================
-// MONGODB CONNECTION
+// REGISTRATION LOGIC
 // ============================================
 
-const MONGO_URI = process.env.MONGO_URI || "your_mongodb_connection_string_here";
-const client = new MongoClient(MONGO_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        userEmail = user.email;
+        isGuest = false;
+        console.log("✅ Auto-logged in:", userEmail);
+        updateRegistrationUI(userEmail, false);
+        checkDatabaseStatus(userEmail);
+    }
 });
 
-let db;
-let usersCollection;
-
-// Connect to MongoDB
-async function connectDB() {
-  try {
-    await client.connect();
-    console.log("✅ Connected to MongoDB!");
-    
-    db = client.db("anonconnect");
-    usersCollection = db.collection("users");
-    
-    // Create index on email
-    await usersCollection.createIndex({ email: 1 }, { unique: true });
-    
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error);
-    // Don't exit - continue without DB for testing
-  }
+if (btnRegisterGoogle) {
+    btnRegisterGoogle.addEventListener('click', () => {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                userEmail = result.user.email;
+                isGuest = false;
+                console.log("✅ Google Login:", userEmail);
+                updateRegistrationUI(userEmail, false);
+                checkDatabaseStatus(userEmail);
+            })
+            .catch((error) => {
+                console.error("❌ Login Error:", error);
+                alert("Login Failed: " + error.message);
+            });
+    });
 }
 
-connectDB();
-
-// ============================================
-// MIDDLEWARE
-// ============================================
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
-
-app.options("*", cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-// ================== RAZORPAY CONFIG ==================
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_S1af2JV9L5Vlw5",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "your_razorpay_secret_here",
-});
-
-// ================== ROUTES ==================
-
-app.get("/robots.txt", (req, res) => {
-  res.type("text/plain");
-  res.send("User-agent: *\nAllow: /");
-});
-
-app.get("/", (req, res) => {
-  res.json({ 
-    status: "Server is running", 
-    timestamp: new Date(),
-    database: db ? "Connected" : "Disconnected"
-  });
-});
-
-// CREATE ORDER
-app.post("/create-order", async (req, res) => {
-  try {
-    console.log("📦 Create Order Request:", req.body);
-    
-    const { amount } = req.body;
-    
-    if (!amount) {
-      return res.status(400).json({ error: "Amount required" });
-    }
-
-    const order = await razorpay.orders.create({
-      amount: amount * 100,
-      currency: "INR",
-      receipt: "order_" + Date.now(),
+if (btnRegisterAnonymous) {
+    btnRegisterAnonymous.addEventListener('click', () => {
+        userEmail = 'guest_' + Date.now() + '@anon.local';
+        isGuest = true;
+        isPremium = false;
+        console.log("👻 Guest login");
+        updateRegistrationUI(userEmail, true);
     });
+}
 
-    console.log("✅ Order Created:", order.id);
-    res.json(order);
-    
-  } catch (err) {
-    console.error("❌ Create Order Error:", err);
-    res.status(500).json({ 
-      error: "Order creation failed", 
-      details: err.message 
+if (btnContinueToSafety) {
+    btnContinueToSafety.addEventListener('click', () => {
+        if (stepRegister) stepRegister.classList.add('hidden');
+        if (homeFlowContainer) homeFlowContainer.classList.remove('hidden');
+        updatePreferencesUI();
     });
-  }
-});
+}
 
-// VERIFY PAYMENT
-app.post("/verify-payment", async (req, res) => {
-  try {
-    console.log("🔐 Verify Payment Request");
+function updateRegistrationUI(email, isGuestMode) {
+    if (loginOptions) loginOptions.classList.add('hidden');
+    if (userStatusCard) userStatusCard.classList.remove('hidden');
+    if (btnContinueToSafety) btnContinueToSafety.classList.remove('hidden');
     
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      email,
-      plan
-    } = req.body;
-
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Missing payment details" 
-      });
-    }
-
-    if (!email || email.startsWith('guest_')) {
-      return res.status(400).json({
-        success: false,
-        error: "Guest accounts cannot purchase premium"
-      });
-    }
-
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "your_secret")
-      .update(body)
-      .digest("hex");
-
-    if (expectedSignature === razorpay_signature) {
-      console.log("✅ Payment Verified for:", email);
-      
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 1);
-      
-      if (usersCollection) {
-        await usersCollection.updateOne(
-          { email: email },
-          { 
-            $set: { 
-              isPremium: true,
-              plan: plan,
-              paymentId: razorpay_payment_id,
-              orderId: razorpay_order_id,
-              purchaseDate: new Date(),
-              expiryDate: expiryDate,
-              lastUpdated: new Date()
-            }
-          },
-          { upsert: true }
-        );
-        
-        console.log("💾 Saved to database");
-      }
-      
-      return res.json({ 
-        success: true, 
-        isPremium: true,
-        expiryDate: expiryDate,
-        message: "Payment verified!" 
-      });
-      
-    } else {
-      console.error("❌ Signature Mismatch");
-      return res.status(400).json({ 
-        success: false,
-        error: "Invalid signature" 
-      });
+    if (loggedUserEmail) {
+        loggedUserEmail.textContent = isGuestMode ? 'Guest Mode' : email;
     }
     
-  } catch (err) {
-    console.error("❌ Verify Error:", err);
-    res.status(500).json({ 
-      success: false,
-      error: "Verification failed"
-    });
-  }
-});
-
-// CHECK PREMIUM STATUS
-app.post("/check-status", async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.json({ isPremium: false });
-    }
-
-    if (email.startsWith('guest_')) {
-      return res.json({ 
-        isPremium: false,
-        isGuest: true
-      });
-    }
-    
-    if (!usersCollection) {
-      return res.json({ isPremium: false });
-    }
-    
-    const user = await usersCollection.findOne({ email: email });
-    
-    if (!user) {
-      return res.json({ isPremium: false });
-    }
-    
-    const now = new Date();
-    const isExpired = user.expiryDate && new Date(user.expiryDate) < now;
-    
-    if (isExpired) {
-      await usersCollection.updateOne(
-        { email: email },
-        { $set: { isPremium: false, lastUpdated: new Date() } }
-      );
-      
-      return res.json({ 
-        isPremium: false,
-        expired: true,
-        expiryDate: user.expiryDate 
-      });
-    }
-    
-    return res.json({ 
-      isPremium: user.isPremium || false,
-      plan: user.plan,
-      expiryDate: user.expiryDate,
-      daysRemaining: Math.ceil((new Date(user.expiryDate) - now) / (1000 * 60 * 60 * 24))
-    });
-    
-  } catch (err) {
-    console.error("❌ Status Check Error:", err);
-    res.json({ isPremium: false });
-  }
-});
-
-// ================== CHAT SOCKET ==================
-let queue = [];
-
-io.on("connection", (socket) => {
-  console.log("🔌 New connection:", socket.id);
-  socket.lastMsgTime = 0;
-
-  socket.on("find_partner", async (userInfo) => {
-    socket.userInfo = userInfo || { 
-      nickname: "Stranger", 
-      myGender: "male", 
-      partnerGender: "random"
-    };
-
-    // SERVER-SIDE VALIDATION
-    if (userInfo.partnerGender !== 'random') {
-      if (userInfo.isGuest || !userInfo.email || userInfo.email.startsWith('guest_')) {
-        socket.userInfo.partnerGender = 'random';
-        socket.emit('premium_required', { 
-          message: 'Gender filters require Google login & Premium' 
-        });
-      } else if (!userInfo.isPremium && usersCollection) {
-        try {
-          const user = await usersCollection.findOne({ email: userInfo.email });
-          
-          if (!user || !user.isPremium) {
-            socket.userInfo.partnerGender = 'random';
-            socket.emit('premium_required', { 
-              message: 'Premium subscription required for filters' 
-            });
-          }
-        } catch (err) {
-          socket.userInfo.partnerGender = 'random';
+    if (loggedUserStatus) {
+        if (isGuestMode) {
+            loggedUserStatus.innerHTML = '🎭 Random Chat Only';
+            loggedUserStatus.style.color = '#ff9f43';
+        } else {
+            loggedUserStatus.innerHTML = '⏳ Checking status...';
+            loggedUserStatus.style.color = '#888';
         }
-      }
     }
+}
 
-    queue = queue.filter((s) => s.id !== socket.id);
+function updatePreferencesUI() {
+    if (prefUserEmail) {
+        prefUserEmail.textContent = isGuest ? 'Guest Mode' : (userEmail || 'Anonymous');
+    }
+    if (prefUserStatus) {
+        prefUserStatus.textContent = isGuest ? 'Limited features' : (isPremium ? 'Premium 👑' : 'Free');
+    }
+    if (premiumStatusBadge) {
+        premiumStatusBadge.innerText = isGuest ? "Guest 🎭" : "Free";
+        premiumStatusBadge.style.color = isGuest ? "#ff9f43" : "#ffd700";
+    }
+}
 
-    const matchIndex = queue.findIndex((waiting) => {
-      const me = socket.userInfo;
-      const them = waiting.userInfo;
-      return (
-        (me.partnerGender === "random" || me.partnerGender === them.myGender) &&
-        (them.partnerGender === "random" || them.partnerGender === me.myGender)
-      );
+// ============================================
+// DATABASE & PAYMENT
+// ============================================
+
+async function checkDatabaseStatus(email) {
+    try {
+        const res = await fetch(`${BACKEND_URL}/check-status`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ email })
+        });
+        
+        const data = await res.json();
+        
+        if (data.isPremium) { 
+            isPremium = true; 
+            updatePremiumUI();
+            
+            if (loggedUserStatus) {
+                loggedUserStatus.innerHTML = `✅ Premium • ${data.daysRemaining} days`;
+                loggedUserStatus.style.color = '#00f2ea';
+            }
+        } else {
+            if (loggedUserStatus) {
+                loggedUserStatus.innerHTML = '💎 Free • Upgrade available';
+                loggedUserStatus.style.color = '#888';
+            }
+        }
+    } catch(e) { 
+        console.error("❌ Status check failed:", e);
+    }
+}
+
+function updatePremiumUI() {
+    if (premiumStatusBadge) {
+        premiumStatusBadge.innerText = "PREMIUM 👑";
+        premiumStatusBadge.style.color = "#00f2ea";
+    }
+    
+    document.querySelectorAll('.premium-lock').forEach(lock => {
+        lock.style.display = 'none';
     });
+}
 
-    if (matchIndex > -1) {
-      const partner = queue.splice(matchIndex, 1)[0];
-      const room = socket.id + "#" + partner.id;
-      socket.join(room);
-      partner.join(room);
-      
-      socket.emit("chat_start", { 
-        room, 
-        country: partner.userInfo.country || "🌐", 
-        nickname: partner.userInfo.nickname || "Stranger"
-      });
-      
-      partner.emit("chat_start", { 
-        room, 
-        country: socket.userInfo.country || "🌐", 
-        nickname: socket.userInfo.nickname || "Stranger"
-      });
-      
-      console.log("✅ Match found:", socket.id, "↔", partner.id);
-    } else {
-      queue.push(socket);
-      socket.emit("waiting");
-      console.log("⏳ User waiting:", socket.id);
+window.initiatePayment = async function(plan, amount) {
+    if (!userEmail || isGuest) { 
+        alert("Please login with Google to purchase!"); 
+        return; 
     }
-  });
+    
+    try {
+        const orderResponse = await fetch(`${BACKEND_URL}/create-order`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ amount })
+        });
+        
+        const order = await orderResponse.json();
+        
+        const options = {
+            "key": "rzp_test_S1af2JV9L5Vlw5",
+            "amount": order.amount, 
+            "currency": "INR", 
+            "name": "AnonConnect Premium", 
+            "description": `${plan} - 1 Month`,
+            "order_id": order.id,
+            "handler": async function (response) {
+                const verifyResponse = await fetch(`${BACKEND_URL}/verify-payment`, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        plan,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    })
+                });
+                
+                const verifyData = await verifyResponse.json();
+                
+                if (verifyData.success) {
+                    alert('🎉 Payment Successful! Premium activated!');
+                    isPremium = true; 
+                    updatePremiumUI();
+                    closePremiumModal();
+                }
+            },
+            "prefill": { "email": userEmail },
+            "theme": { "color": "#00f2ea" }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.open();
+        
+    } catch(error) {
+        console.error("❌ Payment Error:", error);
+        alert("Payment Error: " + error.message);
+    }
+}
 
-  socket.on("send_message", (data) => {
-    const now = Date.now();
-    if (now - socket.lastMsgTime < 500) return;
-    socket.lastMsgTime = now;
-    socket.to(data.room).emit("receive_message", data.message);
-  });
+// ============================================
+// GENDER SELECTION
+// ============================================
 
-  socket.on("typing_start", (room) => socket.to(room).emit("partner_typing"));
-  socket.on("typing_stop", (room) => socket.to(room).emit("partner_stopped_typing"));
+window.setMyGender = function(gender) {
+    myGender = gender;
+    if (btnIamMale) btnIamMale.classList.remove('active');
+    if (btnIamFemale) btnIamFemale.classList.remove('active');
+    const activeBtn = getEl('iam-' + gender);
+    if (activeBtn) activeBtn.classList.add('active');
+}
 
-  socket.on("skip_chat", (room) => {
-    socket.to(room).emit("partner_left");
-    socket.leave(room);
-    queue = queue.filter((s) => s.id !== socket.id);
-  });
+// Add click handlers with null checks
+if (btnIamMale) btnIamMale.addEventListener('click', () => setMyGender('male'));
+if (btnIamFemale) btnIamFemale.addEventListener('click', () => setMyGender('female'));
 
-  socket.on("disconnect", () => {
-    queue = queue.filter((s) => s.id !== socket.id);
-    console.log("❌ Disconnected:", socket.id);
-  });
+if (btnRandom) btnRandom.addEventListener('click', () => selectPartner('random', btnRandom));
+if (btnMale) btnMale.addEventListener('click', () => checkPremiumAccess('male', btnMale));
+if (btnFemale) btnFemale.addEventListener('click', () => checkPremiumAccess('female', btnFemale));
+
+function selectPartner(type, btn) {
+    selectedPartnerGender = type;
+    [btnMale, btnFemale, btnRandom].forEach(b => {
+        if (b) b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+}
+
+function checkPremiumAccess(type, btn) {
+    if (isGuest) {
+        alert('🎭 Guest Mode: Filters locked!\n\nLogin with Google to unlock.');
+        return;
+    }
+    
+    if (isPremium) {
+        selectPartner(type, btn);
+    } else { 
+        alert('🔒 Premium Feature\n\nUpgrade to unlock Male/Female filters!');
+        if (overlay) overlay.classList.remove('hidden'); 
+        if (modalPricing) modalPricing.classList.remove('hidden'); 
+    }
+}
+
+window.closePremiumModal = function() { 
+    if (overlay) overlay.classList.add('hidden'); 
+}
+
+// ============================================
+// BAD WORD FILTER
+// ============================================
+
+const badWords = ["fuck", "sex", "porn", "dick", "pussy", "nude", "horny", "bitch", "randi", "chut", "lund"];
+function filterMessage(text) {
+    let clean = text;
+    badWords.forEach(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        clean = clean.replace(regex, "***");
+    });
+    return clean;
+}
+
+// ============================================
+// BLOG LOGIC
+// ============================================
+
+const blogPosts = [
+    {
+        title: "5 Tips to Stay Safe",
+        desc: "Learn how to protect your identity.",
+        date: "Today",
+        color: "linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%)",
+        content: `<h2>Safety First!</h2><p>Never share personal info.</p>`
+    },
+    {
+        title: "Why Anonymous Chat is Viral?",
+        desc: "The psychology behind it.",
+        date: "Yesterday",
+        color: "linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%)",
+        content: `<h2>The Thrill</h2><p>Spontaneity is key.</p>`
+    }
+];
+
+function renderBlogs() {
+    const grid = getEl('blog-grid');
+    if (!grid) return;
+    grid.innerHTML = blogPosts.map((post, i) => `
+        <div class="blog-card-new" onclick="openBlogPost(${i})">
+            <div class="blog-cover" style="background: ${post.color};"></div>
+            <div class="blog-info">
+                <span class="blog-date">${post.date}</span>
+                <h3>${post.title}</h3>
+                <p>${post.desc}</p>
+                <div class="read-more">Read →</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.openBlogPost = function(index) {
+    const content = getEl('full-blog-content');
+    const gridView = getEl('blog-grid-view');
+    const fullView = getEl('blog-full-view');
+    
+    if (content) content.innerHTML = blogPosts[index].content;
+    if (gridView) gridView.classList.add('hidden');
+    if (fullView) fullView.classList.remove('hidden');
+}
+
+const backToBlog = getEl('back-to-blog');
+if (backToBlog) {
+    backToBlog.addEventListener('click', () => {
+        const gridView = getEl('blog-grid-view');
+        const fullView = getEl('blog-full-view');
+        if (fullView) fullView.classList.add('hidden');
+        if (gridView) gridView.classList.remove('hidden');
+    });
+}
+
+// ============================================
+// NAVIGATION
+// ============================================
+
+function hideAll() {
+    [stepRegister, homeFlowContainer, pageBlog, pageAbout, pageSupport, pageChat].forEach(el => {
+        if (el) el.classList.add('hidden');
+    });
+}
+
+const navHome = getEl('nav-home');
+const navBlog = getEl('nav-blog');
+const navAbout = getEl('nav-about');
+const navSupport = getEl('nav-support');
+
+if (navHome) navHome.addEventListener('click', () => { 
+    hideAll(); 
+    if (!userEmail) {
+        if (stepRegister) stepRegister.classList.remove('hidden');
+    } else {
+        if (homeFlowContainer) homeFlowContainer.classList.remove('hidden');
+    }
 });
 
-// ================== GRACEFUL SHUTDOWN ==================
-process.on('SIGINT', async () => {
-  console.log('🛑 Shutting down...');
-  if (client) await client.close();
-  process.exit(0);
+if (navBlog) navBlog.addEventListener('click', () => { hideAll(); if (pageBlog) pageBlog.classList.remove('hidden'); renderBlogs(); });
+if (navAbout) navAbout.addEventListener('click', () => { hideAll(); if (pageAbout) pageAbout.classList.remove('hidden'); });
+if (navSupport) navSupport.addEventListener('click', () => { hideAll(); if (pageSupport) pageSupport.classList.remove('hidden'); });
+
+// Safety checkboxes
+const checkAge = getEl('check-age');
+const checkRules = getEl('check-rules');
+const checkTerms = getEl('check-terms');
+const btnSafetyContinue = getEl('btn-safety-continue');
+
+[checkAge, checkRules, checkTerms].forEach(check => {
+    if (check) check.addEventListener('change', () => {
+        if (btnSafetyContinue) {
+            btnSafetyContinue.disabled = !(checkAge?.checked && checkRules?.checked && checkTerms?.checked);
+        }
+    });
 });
 
-// ================== START SERVER ==================
-const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
-  console.log("🚀 Server running on port", PORT);
-  console.log("🔑 Razorpay:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Not Set ⚠️");
-  console.log("🗄️  MongoDB:", db ? "Connected ✅" : "Not Connected ⚠️");
+const btnLetsChat = getEl('btn-lets-chat');
+const btnStartFinal = getEl('btn-start-final');
+
+if (btnSafetyContinue) {
+    btnSafetyContinue.addEventListener('click', () => {
+        getEl('step-safety')?.classList.add('hidden');
+        getEl('step-landing')?.classList.remove('hidden');
+    });
+}
+
+if (btnLetsChat) {
+    btnLetsChat.addEventListener('click', () => {
+        getEl('step-landing')?.classList.add('hidden');
+        getEl('step-prefs')?.classList.remove('hidden');
+    });
+}
+
+if (btnStartFinal) {
+    btnStartFinal.addEventListener('click', () => {
+        if (homeFlowContainer) homeFlowContainer.classList.add('hidden');
+        getEl('main-nav')?.classList.add('hidden');
+        if (pageChat) pageChat.classList.remove('hidden');
+        if (waitingScreen) waitingScreen.classList.remove('hidden');
+        if (chatScreen) chatScreen.classList.add('hidden');
+        findPartner();
+    });
+}
+
+// ============================================
+// CHAT LOGIC
+// ============================================
+
+fetch('https://ipwho.is/')
+    .then(res => res.json())
+    .then(data => {
+        if (data.country_code) {
+            const codes = data.country_code.toUpperCase().split('').map(c => 127397 + c.charCodeAt());
+            myCountryFlag = String.fromCodePoint(...codes);
+        }
+    })
+    .catch(() => {});
+
+function findPartner() {
+    if (statusText) statusText.innerText = "🟡 Searching...";
+    socket.emit('find_partner', { 
+        country: myCountryFlag, 
+        nickname: nicknameInput?.value.trim() || "Stranger", 
+        myGender, 
+        partnerGender: selectedPartnerGender, 
+        email: userEmail,
+        isPremium,
+        isGuest
+    });
+}
+
+function sendMessage() {
+    const raw = msgInput?.value.trim();
+    if (raw && currentRoom) { 
+        const clean = filterMessage(raw);
+        addMessage(clean, 'my-msg'); 
+        socket.emit('send_message', { room: currentRoom, message: clean }); 
+        if (msgInput) msgInput.value = ''; 
+        socket.emit('typing_stop', currentRoom); 
+        getEl('emoji-picker')?.classList.add('hidden');
+    }
+}
+
+function addMessage(msg, type) {
+    if (!messagesDiv) return;
+    const div = document.createElement('div'); 
+    div.classList.add('message', type);
+    div.innerHTML = `${msg} <span class="msg-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>`;
+    messagesDiv.appendChild(div); 
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function addSystemBlock(country, nickname) {
+    if (!messagesDiv) return;
+    messagesDiv.innerHTML += `
+        <div class="sys-connect">
+            <div class="sys-connect-pill">Connected • ${nickname} ${country}</div>
+        </div>
+        <div class="sys-safety-box">
+            <h4>⚠️ Safety Notice</h4>
+            <ul><li>No illegal content</li><li>Be respectful</li></ul>
+        </div>
+    `;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Event listeners
+const emojiBtn = getEl('emoji-btn');
+const emojiPicker = getEl('emoji-picker');
+const sendBtn = getEl('send-btn');
+const skipBtn = getEl('skip-btn');
+const backHomeBtn = getEl('back-home-btn');
+
+if (emojiBtn && emojiPicker) {
+    emojiBtn.addEventListener('click', () => emojiPicker.classList.toggle('hidden'));
+    document.querySelectorAll('#emoji-picker span').forEach(span => {
+        span.addEventListener('click', () => { 
+            if (msgInput) {
+                msgInput.value += span.innerText; 
+                msgInput.focus();
+            }
+        });
+    });
+}
+
+if (msgInput) {
+    msgInput.addEventListener('input', () => { 
+        if (currentRoom) { 
+            socket.emit('typing_start', currentRoom); 
+            clearTimeout(typingTimeout); 
+            typingTimeout = setTimeout(() => socket.emit('typing_stop', currentRoom), 1000); 
+        }
+    });
+    msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+}
+
+if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+if (backHomeBtn) backHomeBtn.addEventListener('click', () => { 
+    if (currentRoom) socket.emit('skip_chat', currentRoom); 
+    location.reload(); 
+});
+
+if (skipBtn) {
+    skipBtn.addEventListener('click', () => { 
+        if (currentRoom) { 
+            socket.emit('skip_chat', currentRoom); 
+            currentRoom = null; 
+        } 
+        if (messagesDiv) messagesDiv.innerHTML = ''; 
+        if (waitingScreen) waitingScreen.classList.remove('hidden'); 
+        if (chatScreen) chatScreen.classList.add('hidden'); 
+        if (statusText) statusText.innerText = "🔴 Offline"; 
+        findPartner(); 
+    });
+}
+
+// Socket events
+socket.on('chat_start', (data) => { 
+    currentRoom = data.room; 
+    if (statusText) statusText.innerText = "🟢 Connected"; 
+    if (waitingScreen) waitingScreen.classList.add('hidden'); 
+    if (chatScreen) chatScreen.classList.remove('hidden'); 
+    if (messagesDiv) messagesDiv.innerHTML = ''; 
+    addSystemBlock(data.country, data.nickname); 
+    if (notifSound) notifSound.play().catch(() => {});
+});
+
+socket.on('receive_message', (msg) => { 
+    addMessage(msg, 'stranger-msg'); 
+    if (notifSound) notifSound.play().catch(() => {});
+});
+
+const typingStatus = getEl('typing-status');
+socket.on('partner_typing', () => {
+    if (typingStatus) typingStatus.innerText = "typing...";
+});
+socket.on('partner_stopped_typing', () => {
+    if (typingStatus) typingStatus.innerText = "";
+});
+
+socket.on('partner_left', () => {
+    if (statusText) statusText.innerText = "🔴 Left";
+    if (messagesDiv) {
+        messagesDiv.innerHTML += '<div class="sys-connect"><span style="color:#ff4757">Disconnected</span></div>';
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    currentRoom = null;
+    
+    const autoSkip = getEl('auto-skip-toggle');
+    if (autoSkip?.checked) {
+        setTimeout(() => { 
+            if (messagesDiv) messagesDiv.innerHTML = ''; 
+            findPartner(); 
+        }, 1500);
+    }
+});
+
+socket.on('premium_required', (data) => {
+    alert('⚠️ ' + data.message);
+    selectPartner('random', btnRandom);
+    if (!isGuest) {
+        if (overlay) overlay.classList.remove('hidden');
+        if (modalPricing) modalPricing.classList.remove('hidden');
+    }
 });
