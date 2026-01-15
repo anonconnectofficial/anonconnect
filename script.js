@@ -17,7 +17,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // SERVER URL - CHANGE THIS if running locally
-const BACKEND_URL = "https://anonconnect-mnr4.onrender.com";
+const BACKEND_URL = "https://api.render.com/deploy/srv-d5gj1mnpm1nc73e85ui0?key=kuVHs9_3z0E";
 // For local testing use: const BACKEND_URL = "http://localhost:3000";
 
 const socket = io(BACKEND_URL);
@@ -644,4 +644,5 @@ socket.on('premium_required', (data) => {
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
 });
+
 
