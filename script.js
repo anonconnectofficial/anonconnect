@@ -17,7 +17,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // SERVER URL - CHANGE THIS if running locally
-const BACKEND_URL = "https://anonchatrandom.in";
+const BACKEND_URL = "https://anonconnect-mnr4.onrender.com";
 // For local testing use: const BACKEND_URL = "http://localhost:3000";
 
 const socket = io(BACKEND_URL);
@@ -644,6 +644,7 @@ socket.on('premium_required', (data) => {
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
 });
+
 
 
 
