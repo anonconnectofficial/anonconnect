@@ -16,11 +16,30 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// SERVER URL - CHANGE THIS if running locally
-const BACKEND_URL = "https://anonconnect-mnr4.onrender.com";
-// For local testing use: const BACKEND_URL = "http://localhost:3000";
+// 🔥 FIXED - Use your actual domain
+const BACKEND_URL = "https://anonchatrandom.in";
 
-const socket = io(BACKEND_URL);
+// Socket connection with proper config
+const socket = io(BACKEND_URL, {
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionAttempts: 5,
+  timeout: 10000
+});
+
+// Socket connection handlers
+socket.on('connect', () => {
+    console.log('✅ Socket Connected:', socket.id);
+});
+
+socket.on('connect_error', (error) => {
+    console.error('❌ Connection Error:', error.message);
+});
+
+socket.on('disconnect', (reason) => {
+    console.log('⚠️ Disconnected:', reason);
+});
 
 // STATE VARIABLES
 let currentRoom = null;
@@ -33,7 +52,7 @@ let userEmail = null;
 let isGuest = false;
 let isMuted = false;
 
-// DOM ELEMENTS - With null checks
+// DOM ELEMENTS
 const getEl = (id) => document.getElementById(id);
 
 const stepRegister = getEl('step-register');
@@ -53,7 +72,6 @@ const overlay = getEl('premium-overlay');
 const modalPricing = getEl('modal-pricing');
 const notifSound = getEl('notif-sound');
 
-// Registration elements
 const btnRegisterGoogle = getEl('btn-register-google');
 const btnRegisterAnonymous = getEl('btn-register-anonymous');
 const btnContinueToSafety = getEl('btn-continue-to-safety');
@@ -64,7 +82,6 @@ const loggedUserStatus = getEl('logged-user-status');
 const prefUserEmail = getEl('pref-user-email');
 const prefUserStatus = getEl('pref-user-status');
 
-// Gender buttons
 const btnMale = getEl('btn-male');
 const btnFemale = getEl('btn-female');
 const btnRandom = getEl('btn-random');
@@ -266,7 +283,6 @@ window.setMyGender = function(gender) {
     if (activeBtn) activeBtn.classList.add('active');
 }
 
-// Add click handlers with null checks
 if (btnIamMale) btnIamMale.addEventListener('click', () => setMyGender('male'));
 if (btnIamFemale) btnIamFemale.addEventListener('click', () => setMyGender('female'));
 
@@ -441,7 +457,6 @@ if (navBlog) navBlog.addEventListener('click', () => { hideAll(); if (pageBlog) 
 if (navAbout) navAbout.addEventListener('click', () => { hideAll(); if (pageAbout) pageAbout.classList.remove('hidden'); });
 if (navSupport) navSupport.addEventListener('click', () => { hideAll(); if (pageSupport) pageSupport.classList.remove('hidden'); });
 
-// Safety checkboxes
 const checkAge = getEl('check-age');
 const checkRules = getEl('check-rules');
 const checkTerms = getEl('check-terms');
@@ -545,7 +560,6 @@ function addSystemBlock(country, nickname) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Event listeners
 const emojiBtn = getEl('emoji-btn');
 const emojiPicker = getEl('emoji-picker');
 const sendBtn = getEl('send-btn');
@@ -595,7 +609,7 @@ if (skipBtn) {
     });
 }
 
-// Socket events
+// SOCKET EVENTS
 socket.on('chat_start', (data) => { 
     currentRoom = data.room; 
     if (statusText) statusText.innerText = "🟢 Connected"; 
@@ -644,8 +658,3 @@ socket.on('premium_required', (data) => {
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
 });
-
-
-
-
-
