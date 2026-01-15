@@ -3,9 +3,19 @@ const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http, { 
   cors: { 
-    origin: "*",
-    methods: ["GET", "POST"]
-  } 
+    origin: [
+      "https://anonconnect-14b47.web.app",
+      "https://anonconnect-14b47.firebaseapp.com",
+      "https://anonchatrandom.in",
+      "https://www.anonchatrandom.in",
+      "http://localhost:3000",
+      "http://localhost:5000"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
 });
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
@@ -55,7 +65,14 @@ connectDB();
 // ============================================
 
 app.use(cors({
-  origin: "*",
+  origin: [
+    "https://anonconnect-14b47.web.app",
+    "https://anonconnect-14b47.firebaseapp.com",
+    "https://anonchatrandom.in",
+    "https://www.anonchatrandom.in",
+    "http://localhost:3000",
+    "http://localhost:5000"
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -82,7 +99,12 @@ app.get("/", (req, res) => {
   res.json({ 
     status: "Server is running", 
     timestamp: new Date(),
-    database: db ? "Connected" : "Disconnected"
+    database: db ? "Connected" : "Disconnected",
+    allowedOrigins: [
+      "https://anonconnect-14b47.web.app",
+      "https://anonchatrandom.in",
+      "https://www.anonchatrandom.in"
+    ]
   });
 });
 
@@ -362,4 +384,8 @@ http.listen(PORT, () => {
   console.log("🚀 Server running on port", PORT);
   console.log("🔑 Razorpay:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Not Set ⚠️");
   console.log("🗄️  MongoDB:", db ? "Connected ✅" : "Not Connected ⚠️");
+  console.log("🌐 CORS enabled for:");
+  console.log("   - https://anonconnect-14b47.web.app");
+  console.log("   - https://anonchatrandom.in");
+  console.log("   - https://www.anonchatrandom.in");
 });
