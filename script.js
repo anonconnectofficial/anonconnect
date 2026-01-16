@@ -17,28 +17,32 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // 🔥 FIXED - Use your actual domain
-const BACKEND_URL = "https://anonchatrandom.in";
+// ✅ ALWAYS USE RENDER BACKEND (Don't use window.location)
+const BACKEND_URL = 'https://anonconnect-mnr4.onrender.com';
 
-// Socket connection with proper config
+console.log('🔌 Connecting to Backend:', BACKEND_URL);
+
 const socket = io(BACKEND_URL, {
-  transports: ['websocket', 'polling'],
+  withCredentials: true,
   reconnection: true,
-  reconnectionDelay: 1000,
   reconnectionAttempts: 5,
-  timeout: 10000
+  reconnectionDelay: 1000,
+  timeout: 20000,
+  transports: ['websocket', 'polling']
 });
 
-// Socket connection handlers
+// Connection handlers
 socket.on('connect', () => {
-    console.log('✅ Socket Connected:', socket.id);
+  console.log('✅ Connected to server!', socket.id);
 });
 
 socket.on('connect_error', (error) => {
-    console.error('❌ Connection Error:', error.message);
+  console.error('❌ Connection Error:', error.message);
+  console.log('🔄 Retrying...');
 });
 
 socket.on('disconnect', (reason) => {
-    console.log('⚠️ Disconnected:', reason);
+  console.log('🔌 Disconnected:', reason);
 });
 
 // STATE VARIABLES
@@ -658,3 +662,4 @@ socket.on('premium_required', (data) => {
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
 });
+
