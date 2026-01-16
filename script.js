@@ -661,5 +661,54 @@ socket.on('premium_required', (data) => {
         if (overlay) overlay.classList.remove('hidden');
         if (modalPricing) modalPricing.classList.remove('hidden');
     }
-});
+  });
+// ============================================
+// FOOTER NAVIGATION
+// ============================================
+
+const footerHome = getEl('footer-home');
+const footerBlog = getEl('footer-blog');
+const footerAbout = getEl('footer-about');
+const footerSupport = getEl('footer-support');
+
+if (footerHome) {
+    footerHome.addEventListener('click', (e) => { 
+        e.preventDefault();
+        hideAll(); 
+        if (!userEmail) {
+            if (stepRegister) stepRegister.classList.remove('hidden');
+        } else {
+            if (homeFlowContainer) homeFlowContainer.classList.remove('hidden');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+if (footerBlog) {
+    footerBlog.addEventListener('click', (e) => { 
+        e.preventDefault();
+        hideAll(); 
+        if (pageBlog) pageBlog.classList.remove('hidden'); 
+        renderBlogs();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+if (footerAbout) {
+    footerAbout.addEventListener('click', (e) => { 
+        e.preventDefault();
+        hideAll(); 
+        if (pageAbout) pageAbout.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+if (footerSupport) {
+    footerSupport.addEventListener('click', (e) => { 
+        e.preventDefault();
+        hideAll(); 
+        if (pageSupport) pageSupport.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
 
