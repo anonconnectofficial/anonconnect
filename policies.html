@@ -197,7 +197,12 @@
 </head>
 <body>
     <nav>
-        <div class="logo">Anon<span>Connect</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo">Anon<span>Connect</span></div>
+            <button onclick="goBack()" style="background: #00f2ea; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                ← Back to Home
+            </button>
+        </div>
     </nav>
 
     <div class="container">
@@ -644,6 +649,16 @@
             
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goBack() {
+            // Try to go back to previous page
+            if (document.referrer && document.referrer.includes('anonchatrandom.in')) {
+                window.history.back();
+            } else {
+                // If no referrer or external referrer, go to home
+                window.location.href = '/';
+            }
         }
     </script>
 </body>
