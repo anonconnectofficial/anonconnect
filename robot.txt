@@ -1,0 +1,21 @@
+# Allow all search engines to crawl
+User-agent: *
+Allow: /
+
+# Disallow admin or private sections (if any)
+Disallow: /admin/
+Disallow: /private/
+
+# Allow Google bot specifically
+User-agent: Googlebot
+Allow: /
+
+# Allow Google Image bot
+User-agent: Googlebot-Image
+Allow: /
+
+# Sitemap location
+Sitemap: https://anonchatrandom.in/sitemap.xml
+
+# Crawl-delay (optional - prevents overloading server)
+Crawl-delay: 1
