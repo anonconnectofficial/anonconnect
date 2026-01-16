@@ -54,7 +54,7 @@
     <meta name="apple-mobile-web-app-title" content="AnonConnect">
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
     
-    <!-- SCHEMA.ORG STRUCTURED DATA - ENHANCED -->
+    <!-- SCHEMA.ORG STRUCTURED DATA -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -86,128 +86,7 @@
             "ratingCount": "15420",
             "bestRating": "5",
             "worstRating": "1"
-          },
-          "creator": {
-            "@type": "Organization",
-            "@id": "https://anonchatrandom.in/#organization"
-          },
-          "screenshot": "https://images.unsplash.com/photo-1516726817505-f5ed8259b496?w=1200&q=80",
-          "featureList": [
-            "Anonymous random chat",
-            "Video chat capability", 
-            "AI-powered moderation",
-            "Instant matching",
-            "Global connectivity",
-            "End-to-end encryption",
-            "Gender filters (Premium)",
-            "Mobile optimized"
-          ]
-        },
-        {
-          "@type": "Organization",
-          "@id": "https://anonchatrandom.in/#organization",
-          "name": "AnonConnect",
-          "legalName": "AnonConnect Social Platform",
-          "url": "https://anonchatrandom.in",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://anonchatrandom.in/logo.png",
-            "width": "250",
-            "height": "60"
-          },
-          "sameAs": [
-            "https://discord.gg/637G2q2h"
-          ],
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "email": "anonconnectofficial@gmail.com",
-            "contactType": "Customer Support",
-            "availableLanguage": ["English"]
           }
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://anonchatrandom.in/#website",
-          "url": "https://anonchatrandom.in",
-          "name": "AnonConnect",
-          "description": "Free anonymous random chat platform",
-          "publisher": {
-            "@id": "https://anonchatrandom.in/#organization"
-          },
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": "https://anonchatrandom.in/?q={search_term_string}"
-            },
-            "query-input": "required name=search_term_string"
-          }
-        },
-        {
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "Is AnonConnect completely free?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes! Random chat with strangers is 100% free forever. Premium features (Male/Female filters) are available for users who want advanced matching options."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Is my data safe on AnonConnect?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Absolutely. We don't store any chat history. All conversations are encrypted and deleted immediately after disconnection. We never sell user data."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I use AnonConnect on mobile?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes! Our platform is fully optimized for mobile browsers. Simply visit our website on your phone and start chatting instantly."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What are Premium features?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Premium members can filter chat partners by gender (Male/Female) instead of random matching. This gives you more control over your chat experience."
-              }
-            }
-          ]
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "Home",
-              "item": "https://anonchatrandom.in"
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "name": "Blog",
-              "item": "https://anonchatrandom.in#blog"
-            },
-            {
-              "@type": "ListItem",
-              "position": 3,
-              "name": "About",
-              "item": "https://anonchatrandom.in#about"
-            },
-            {
-              "@type": "ListItem",
-              "position": 4,
-              "name": "Support",
-              "item": "https://anonchatrandom.in#support"
-            }
-          ]
         }
       ]
     }
@@ -319,7 +198,7 @@
                         </label>
                         <label class="check-item">
                             <input type="checkbox" id="check-terms" aria-required="true">
-                            <span>I accept the Terms of Service & Privacy Policy</span>
+                            <span>I accept the <a href="policies.html" target="_blank" style="color: #00f2ea; text-decoration: underline;">Terms of Service & Privacy Policy</a></span>
                         </label>
                     </div>
                     <button id="btn-safety-continue" class="btn full-width-btn" disabled aria-disabled="true">I Agree & Continue</button>
@@ -642,10 +521,20 @@
                 <div>
                     <h4 style="color: #00f2ea; margin-bottom: 10px; font-size: 0.9rem;">Quick Links</h4>
                     <ul style="list-style: none; padding: 0;">
-                        <li style="margin: 5px 0;"><a href="#" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Home</a></li>
-                        <li style="margin: 5px 0;"><a href="#blog" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Blog</a></li>
-                        <li style="margin: 5px 0;"><a href="#about" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">About Us</a></li>
-                        <li style="margin: 5px 0;"><a href="#support" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Support</a></li>
+                        <li style="margin: 5px 0;"><a href="#" id="footer-home" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Home</a></li>
+                        <li style="margin: 5px 0;"><a href="#" id="footer-blog" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Blog</a></li>
+                        <li style="margin: 5px 0;"><a href="#" id="footer-about" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">About Us</a></li>
+                        <li style="margin: 5px 0;"><a href="#" id="footer-support" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: #00f2ea; margin-bottom: 10px; font-size: 0.9rem;">Legal</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 5px 0;"><a href="policies.html" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Privacy Policy</a></li>
+                        <li style="margin: 5px 0;"><a href="policies.html" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Terms of Service</a></li>
+                        <li style="margin: 5px 0;"><a href="policies.html" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Refund Policy</a></li>
+                        <li style="margin: 5px 0;"><a href="policies.html" style="color: #aaa; text-decoration: none; font-size: 0.85rem;">Contact Us</a></li>
                     </ul>
                 </div>
                 
@@ -670,11 +559,6 @@
             
             <div style="border-top: 1px solid #222; padding-top: 20px;">
                 <p style="color: #666; font-size: 0.8rem; margin: 5px 0;">© 2026 AnonConnect. All rights reserved.</p>
-                <p style="color: #666; font-size: 0.75rem;">
-                    <a href="#" style="color: #666; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
-                    <a href="#" style="color: #666; text-decoration: none; margin: 0 10px;">Terms of Service</a> | 
-                    <a href="#" style="color: #666; text-decoration: none; margin: 0 10px;">Community Guidelines</a>
-                </p>
                 <p style="color: #555; font-size: 0.7rem; margin-top: 15px;">
                     Keywords: random chat, talk to strangers, omegle alternative, free chat, anonymous chat, video chat, chatroulette, meet new people
                 </p>
@@ -686,3 +570,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
