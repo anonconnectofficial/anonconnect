@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonConnect - Legal Policies</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: #050505;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0,0,0,0.95);
+            border-bottom: 1px solid #222;
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-weight: 900;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: #00f2ea;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background: #0f0f13;
+            border-radius: 20px;
+            border: 1px solid #222;
+        }
+
+        h1 {
+            color: #00f2ea;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: #00f2ea;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            color: #fff;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        p {
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .last-updated {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .highlight {
+            color: #00f2ea;
+            font-weight: bold;
+        }
+
+        .section-box {
+            background: rgba(0, 242, 234, 0.05);
+            border: 1px solid rgba(0, 242, 234, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: #1a1a1a;
+            border-color: #00f2ea;
+        }
+
+        .tab.active {
+            background: #00f2ea;
+            color: #000;
+            border-color: #00f2ea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .contact-box {
+            background: #111;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 40px;
+            border: 1px solid #333;
+        }
+
+        a {
+            color: #00f2ea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Anon<span>Connect</span></div>
+    </nav>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('privacy')">Privacy Policy</div>
+            <div class="tab" onclick="showTab('terms')">Terms of Service</div>
+            <div class="tab" onclick="showTab('contact')">Contact Us</div>
+            <div class="tab" onclick="showTab('refund')">Refund Policy</div>
+        </div>
+
+        <!-- PRIVACY POLICY -->
+        <div id="privacy" class="tab-content active">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: January 16, 2026</p>
+
+            <p>At AnonConnect, we take your privacy seriously. This Privacy Policy explains how we collect, use, and protect your information when you use our platform.</p>
+
+            <h2>1. Information We Collect</h2>
+            
+            <h3>1.1 Account Information</h3>
+            <ul>
+                <li><strong>Google Login Users:</strong> Email address, name, and profile picture (provided by Google OAuth)</li>
+                <li><strong>Guest Users:</strong> Temporary anonymous identifier only</li>
+                <li><strong>Premium Users:</strong> Payment information (processed securely by Razorpay)</li>
+            </ul>
+
+            <h3>1.2 Automatic Information</h3>
+            <ul>
+                <li>IP address and approximate location (country only)</li>
+                <li>Browser type and device information</li>
+                <li>Connection timestamps</li>
+            </ul>
+
+            <h3>1.3 Chat Data</h3>
+            <div class="section-box">
+                <p><strong>Important:</strong> We do NOT store your chat messages. All conversations are:</p>
+                <ul>
+                    <li>✓ Transmitted in real-time only</li>
+                    <li>✓ Never saved to our servers</li>
+                    <li>✓ Automatically deleted after disconnection</li>
+                    <li>✓ End-to-end encrypted during transmission</li>
+                </ul>
+            </div>
+
+            <h2>2. How We Use Your Information</h2>
+            <ul>
+                <li>To provide and improve our chat matching service</li>
+                <li>To process premium subscriptions and payments</li>
+                <li>To enforce our Community Guidelines and Terms of Service</li>
+                <li>To prevent abuse, spam, and fraudulent activity</li>
+                <li>To send service-related announcements (not marketing emails)</li>
+            </ul>
+
+            <h2>3. Information Sharing</h2>
+            <p>We do NOT sell, rent, or share your personal information with third parties, except:</p>
+            <ul>
+                <li><strong>Payment Processing:</strong> Razorpay processes payments (they have their own privacy policy)</li>
+                <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+                <li><strong>Service Providers:</strong> MongoDB for database hosting (with strict data protection agreements)</li>
+            </ul>
+
+            <h2>4. Data Security</h2>
+            <p>We implement industry-standard security measures:</p>
+            <ul>
+                <li>SSL/TLS encryption for all data transmission</li>
+                <li>Secure MongoDB Atlas database with authentication</li>
+                <li>Regular security audits and updates</li>
+                <li>Limited employee access to user data</li>
+            </ul>
+
+            <h2>5. Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li><strong>Access:</strong> Request a copy of your data</li>
+                <li><strong>Deletion:</strong> Request account deletion at any time</li>
+                <li><strong>Correction:</strong> Update your information</li>
+                <li><strong>Portability:</strong> Export your data</li>
+            </ul>
+
+            <h2>6. Cookies and Tracking</h2>
+            <p>We use minimal cookies for:</p>
+            <ul>
+                <li>Session management and authentication</li>
+                <li>Remembering your preferences</li>
+                <li>Google Analytics (anonymized data only)</li>
+            </ul>
+
+            <h2>7. Children's Privacy</h2>
+            <div class="warning-box">
+                <p><strong>Age Restriction:</strong> AnonConnect is only for users aged 18 and above. We do not knowingly collect information from minors. If we discover a minor using our service, we will terminate their access immediately.</p>
+            </div>
+
+            <h2>8. International Users</h2>
+            <p>AnonConnect is operated from India. If you access our service from outside India, your data may be transferred to and processed in India, which may have different data protection laws than your country.</p>
+
+            <h2>9. Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify users of significant changes via email (for registered users) or website notice.</p>
+        </div>
+
+        <!-- TERMS OF SERVICE -->
+        <div id="terms" class="tab-content">
+            <h1>Terms of Service</h1>
+            <p class="last-updated">Last Updated: January 16, 2026</p>
+
+            <p>Welcome to AnonConnect. By using our platform, you agree to these Terms of Service. Please read them carefully.</p>
+
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using AnonConnect, you agree to be bound by these Terms. If you do not agree, do not use our service.</p>
+
+            <h2>2. Eligibility</h2>
+            <div class="warning-box">
+                <p><strong>Age Requirement:</strong> You must be at least 18 years old to use AnonConnect. By using our service, you represent that you meet this age requirement.</p>
+            </div>
+
+            <h2>3. Account Types</h2>
+            <h3>3.1 Guest Accounts</h3>
+            <ul>
+                <li>Temporary access with limited features</li>
+                <li>Random chat matching only</li>
+                <li>No data stored</li>
+            </ul>
+
+            <h3>3.2 Registered Accounts (Google Login)</h3>
+            <ul>
+                <li>Access to premium features (with subscription)</li>
+                <li>Gender filter options</li>
+                <li>Account history and preferences saved</li>
+            </ul>
+
+            <h2>4. Prohibited Conduct</h2>
+            <p>You agree NOT to:</p>
+            <ul>
+                <li>❌ Share, display, or transmit nudity or sexually explicit content</li>
+                <li>❌ Harass, threaten, or intimidate other users</li>
+                <li>❌ Use hate speech or discriminatory language</li>
+                <li>❌ Share personal information without consent (doxxing)</li>
+                <li>❌ Spam, advertise, or solicit commercial activity</li>
+                <li>❌ Impersonate others or create fake accounts</li>
+                <li>❌ Use bots, scripts, or automated tools</li>
+                <li>❌ Attempt to hack, exploit, or damage the platform</li>
+                <li>❌ Share illegal content or engage in illegal activities</li>
+                <li>❌ Record or screenshot chats without consent</li>
+            </ul>
+
+            <div class="section-box">
+                <h3>⚠️ Enforcement</h3>
+                <p>Violations may result in:</p>
+                <ul>
+                    <li>Immediate chat termination</li>
+                    <li>Temporary or permanent account ban</li>
+                    <li>Report to law enforcement (for illegal activity)</li>
+                    <li>No refunds for premium subscriptions</li>
+                </ul>
+            </div>
+
+            <h2>5. Premium Subscriptions</h2>
+            <h3>5.1 Features</h3>
+            <ul>
+                <li><strong>Basic Plan (₹199/month):</strong> Gender filters, priority matching, email support</li>
+                <li><strong>Plus Plan (₹399/month):</strong> All Basic features + ad-free experience + 24/7 support</li>
+            </ul>
+
+            <h3>5.2 Billing</h3>
+            <ul>
+                <li>Subscriptions are billed monthly in advance</li>
+                <li>Payment processed securely via Razorpay</li>
+                <li>Auto-renewal unless cancelled before next billing cycle</li>
+                <li>No partial refunds for unused time</li>
+            </ul>
+
+            <h2>6. User Content</h2>
+            <p>By using AnonConnect, you acknowledge:</p>
+            <ul>
+                <li>You are responsible for all content you share</li>
+                <li>We do not monitor or moderate chats in real-time</li>
+                <li>We use AI moderation to detect violations automatically</li>
+                <li>You grant us the right to remove violating content</li>
+            </ul>
+
+            <h2>7. Disclaimers</h2>
+            <div class="warning-box">
+                <p><strong>Service "As Is":</strong> AnonConnect is provided without warranties of any kind. We do not guarantee:</p>
+                <ul>
+                    <li>Uninterrupted or error-free service</li>
+                    <li>Safety or suitability of other users</li>
+                    <li>Accuracy of user-provided information</li>
+                    <li>Protection against all harmful content</li>
+                </ul>
+            </div>
+
+            <h2>8. Limitation of Liability</h2>
+            <p>To the maximum extent permitted by law, AnonConnect shall not be liable for:</p>
+            <ul>
+                <li>Any damages arising from use of the service</li>
+                <li>Conduct of other users</li>
+                <li>Loss of data or content</li>
+                <li>Service interruptions or technical issues</li>
+            </ul>
+
+            <h2>9. Termination</h2>
+            <p>We reserve the right to:</p>
+            <ul>
+                <li>Terminate or suspend accounts at our discretion</li>
+                <li>Modify or discontinue the service</li>
+                <li>Change pricing for premium features</li>
+            </ul>
+
+            <h2>10. Governing Law</h2>
+            <p>These Terms are governed by the laws of India. Any disputes shall be resolved in the courts of India.</p>
+
+            <h2>11. Changes to Terms</h2>
+            <p>We may modify these Terms at any time. Continued use after changes constitutes acceptance of the new Terms.</p>
+        </div>
+
+        <!-- CONTACT US -->
+        <div id="contact" class="tab-content">
+            <h1>Contact Us</h1>
+            <p class="last-updated">We're here to help!</p>
+
+            <p>Have questions, feedback, or need assistance? We offer multiple ways to reach our team:</p>
+
+            <h2>📧 Email Support</h2>
+            <div class="section-box">
+                <p><strong>Email:</strong> <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></p>
+                <p><strong>Response Time:</strong> Within 24-48 hours</p>
+                <p><strong>Best For:</strong></p>
+                <ul>
+                    <li>Account issues and ban appeals</li>
+                    <li>Payment and billing questions</li>
+                    <li>Technical problems</li>
+                    <li>Business inquiries and partnerships</li>
+                    <li>Legal or privacy concerns</li>
+                </ul>
+            </div>
+
+            <h2>💬 Discord Community</h2>
+            <div class="section-box">
+                <p><strong>Server:</strong> <a href="https://discord.gg/637G2q2h" target="_blank" rel="noopener noreferrer">Join Discord Server</a></p>
+                <p><strong>Response Time:</strong> Usually within minutes</p>
+                <p><strong>Best For:</strong></p>
+                <ul>
+                    <li>Quick questions and live support</li>
+                    <li>Chat with other users</li>
+                    <li>Report bugs or issues</li>
+                    <li>Feature suggestions</li>
+                    <li>Community discussions</li>
+                </ul>
+            </div>
+
+            <h2>📋 What to Include in Your Message</h2>
+            <p>To help us assist you faster, please include:</p>
+            <ul>
+                <li><strong>Your email address</strong> (if registered)</li>
+                <li><strong>Issue description:</strong> What happened?</li>
+                <li><strong>When it occurred:</strong> Date and time</li>
+                <li><strong>Device/Browser:</strong> What are you using?</li>
+                <li><strong>Screenshots:</strong> If applicable</li>
+            </ul>
+
+            <h2>🚨 Report Abuse or Violations</h2>
+            <div class="warning-box">
+                <p>If you encounter:</p>
+                <ul>
+                    <li>Inappropriate behavior or content</li>
+                    <li>Harassment or threats</li>
+                    <li>Illegal activity</li>
+                    <li>Child safety concerns</li>
+                </ul>
+                <p><strong>Please report immediately via:</strong></p>
+                <ul>
+                    <li>Email: <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></li>
+                    <li>Discord: Contact moderators</li>
+                    <li>Include screenshots and details</li>
+                </ul>
+            </div>
+
+            <h2>🏢 Business Inquiries</h2>
+            <p>For partnerships, advertising, or media inquiries:</p>
+            <p><strong>Email:</strong> <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></p>
+            <p><strong>Subject Line:</strong> "Business Inquiry - [Your Company Name]"</p>
+
+            <h2>💳 Payment & Billing</h2>
+            <p>For subscription issues, refund requests, or payment questions:</p>
+            <ul>
+                <li><strong>Email:</strong> <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></li>
+                <li><strong>Include:</strong> Transaction ID, order ID, and payment date</li>
+                <li><strong>Note:</strong> Refunds are processed per our Refund Policy</li>
+            </ul>
+
+            <div class="contact-box">
+                <h3>📍 Location</h3>
+                <p>AnonConnect is operated from India.</p>
+                <p><strong>Support Hours:</strong> Monday - Friday, 9 AM - 6 PM IST (for email)</p>
+                <p><strong>Discord:</strong> Community-driven support available 24/7</p>
+            </div>
+        </div>
+
+        <!-- REFUND POLICY -->
+        <div id="refund" class="tab-content">
+            <h1>Cancellations & Refunds Policy</h1>
+            <p class="last-updated">Last Updated: January 16, 2026</p>
+
+            <h2>1. Cancellation Policy</h2>
+            
+            <h3>1.1 How to Cancel</h3>
+            <p>You can cancel your premium subscription at any time by:</p>
+            <ul>
+                <li>Contacting us via email: <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></li>
+                <li>Requesting cancellation through Discord support</li>
+                <li>Subject line: "Cancel Subscription - [Your Email]"</li>
+            </ul>
+
+            <h3>1.2 When Cancellation Takes Effect</h3>
+            <ul>
+                <li>Cancellation is effective at the end of your current billing cycle</li>
+                <li>You retain access to premium features until the paid period ends</li>
+                <li>No further charges will be made after cancellation</li>
+                <li>Auto-renewal will be disabled</li>
+            </ul>
+
+            <h2>2. Refund Policy</h2>
+
+            <h3>2.1 Eligibility for Refunds</h3>
+            <div class="section-box">
+                <p><strong>✅ You MAY be eligible for a refund if:</strong></p>
+                <ul>
+                    <li>You experienced technical issues preventing service use</li>
+                    <li>You were charged incorrectly or multiple times</li>
+                    <li>The service did not match the description provided</li>
+                    <li>You request within 7 days of initial purchase (first-time buyers only)</li>
+                </ul>
+            </div>
+
+            <h3>2.2 Non-Refundable Situations</h3>
+            <div class="warning-box">
+                <p><strong>❌ Refunds will NOT be provided for:</strong></p>
+                <ul>
+                    <li>Change of mind after using premium features</li>
+                    <li>Account suspension or ban due to Terms of Service violations</li>
+                    <li>Unused portion of a subscription (partial refunds)</li>
+                    <li>Renewal charges (if you forgot to cancel)</li>
+                    <li>Dissatisfaction with other users' behavior</li>
+                    <li>Service downtime lasting less than 24 hours</li>
+                </ul>
+            </div>
+
+            <h2>3. Refund Process</h2>
+            
+            <h3>3.1 How to Request a Refund</h3>
+            <ol>
+                <li>Email us at: <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></li>
+                <li>Subject: "Refund Request - [Your Email]"</li>
+                <li>Include:
+                    <ul>
+                        <li>Razorpay Order ID</li>
+                        <li>Payment ID</li>
+                        <li>Date of purchase</li>
+                        <li>Reason for refund request</li>
+                        <li>Any supporting documentation</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>3.2 Processing Time</h3>
+            <ul>
+                <li><strong>Review:</strong> 2-3 business days</li>
+                <li><strong>Approval:</strong> You'll receive an email confirmation</li>
+                <li><strong>Refund:</strong> 5-10 business days to original payment method</li>
+                <li><strong>Note:</strong> Refund timeline depends on your bank/payment provider</li>
+            </ul>
+
+            <h2>4. Payment Issues</h2>
+
+            <h3>4.1 Double Charges</h3>
+            <p>If you were charged twice for the same subscription:</p>
+            <ul>
+                <li>Contact us immediately with both transaction IDs</li>
+                <li>We will refund the duplicate charge within 48 hours</li>
+            </ul>
+
+            <h3>4.2 Failed Payments</h3>
+            <p>If payment failed but money was deducted:</p>
+            <ul>
+                <li>Most banks auto-reverse failed payments within 5-7 days</li>
+                <li>If not reversed, contact us with proof of deduction</li>
+                <li>We'll verify with Razorpay and process refund if confirmed</li>
+            </ul>
+
+            <h2>5. 7-Day Money-Back Guarantee</h2>
+            <div class="section-box">
+                <h3>First-Time Premium Buyers Only</h3>
+                <p>If you're purchasing premium for the first time:</p>
+                <ul>
+                    <li>Try premium features risk-free for 7 days</li>
+                    <li>Request full refund within 7 days if unsatisfied</li>
+                    <li>Must not violate Terms of Service</li>
+                    <li>Only applies to first purchase (not renewals)</li>
+                </ul>
+                <p><strong>To claim:</strong> Email within 7 days with subject "7-Day Guarantee - [Your Email]"</p>
+            </div>
+
+            <h2>6. Chargebacks</h2>
+            <div class="warning-box">
+                <p><strong>Please don't file chargebacks!</strong></p>
+                <p>If you file a chargeback instead of contacting us:</p>
+                <ul>
+                    <li>Your account will be permanently suspended</li>
+                    <li>Future purchases will be blocked</li>
+                    <li>We may charge a chargeback processing fee</li>
+                </ul>
+                <p><strong>Instead:</strong> Contact our support team first. We're here to help!</p>
+            </div>
+
+            <h2>7. Contact for Refunds</h2>
+            <div class="contact-box">
+                <p><strong>Email:</strong> <a href="mailto:anonconnectofficial@gmail.com">anonconnectofficial@gmail.com</a></p>
+                <p><strong>Subject:</strong> "Refund Request - [Your Email]"</p>
+                <p><strong>Discord:</strong> <a href="https://discord.gg/637G2q2h" target="_blank" rel="noopener noreferrer">Join Server</a> (for quick questions)</p>
+                <p><strong>Response Time:</strong> 24-48 hours</p>
+            </div>
+
+            <h2>8. Changes to This Policy</h2>
+            <p>We reserve the right to modify this Refund Policy at any time. Changes will be posted on this page with an updated "Last Updated" date.</p>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
