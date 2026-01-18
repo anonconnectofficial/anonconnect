@@ -17,6 +17,8 @@ const io = require("socket.io")(http, {
   transports: ['websocket', 'polling'],
   allowEIO3: true
 });
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -37,8 +39,8 @@ const client = new MongoClient(MONGO_URI, {
 
 let db;
 let usersCollection;
-let paymentsCollection;
 
+// Connect to MongoDB
 async function connectDB() {
   try {
     await client.connect();
@@ -46,13 +48,13 @@ async function connectDB() {
     
     db = client.db("anonconnect");
     usersCollection = db.collection("users");
-    paymentsCollection = db.collection("payments");
     
+    // Create index on email
     await usersCollection.createIndex({ email: 1 }, { unique: true });
-    await paymentsCollection.createIndex({ transactionId: 1 }, { unique: true });
     
   } catch (error) {
     console.error("❌ MongoDB Connection Error:", error);
+    // Don't exit - continue without DB for testing
   }
 }
 
@@ -77,12 +79,16 @@ app.use(cors({
 }));
 
 app.options("*", cors());
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ============================================
-// BASIC ROUTES
-// ============================================
+// ================== RAZORPAY CONFIG ==================
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_S1af2JV9L5Vlw5",
+  key_secret: process.env.RAZORPAY_KEY_SECRET || "your_razorpay_secret_here",
+});
+
+// ================== ROUTES ==================
 
 app.get("/robots.txt", (req, res) => {
   res.type("text/plain");
@@ -94,181 +100,127 @@ app.get("/", (req, res) => {
     status: "Server is running", 
     timestamp: new Date(),
     database: db ? "Connected" : "Disconnected",
-    paymentSystem: "WhatsApp UPI Verification"
+    allowedOrigins: [
+      "https://anonconnect-14b47.web.app",
+      "https://anonchatrandom.in",
+      "https://www.anonchatrandom.in"
+    ]
   });
 });
 
-// ============================================
-// 🔥 WHATSAPP-ONLY PAYMENT ROUTES
-// ============================================
-
-// Submit payment proof
-app.post("/submit-payment", async (req, res) => {
+// CREATE ORDER
+app.post("/create-order", async (req, res) => {
   try {
-    const { email, transactionId, plan, amount, screenshot } = req.body;
+    console.log("📦 Create Order Request:", req.body);
     
-    console.log("💳 Payment submission:");
-    console.log("Email:", email);
-    console.log("Transaction ID:", transactionId);
-    console.log("Plan:", plan);
-    console.log("Amount:", amount);
+    const { amount } = req.body;
     
+    if (!amount) {
+      return res.status(400).json({ error: "Amount required" });
+    }
+
+    const order = await razorpay.orders.create({
+      amount: amount * 100,
+      currency: "INR",
+      receipt: "order_" + Date.now(),
+    });
+
+    console.log("✅ Order Created:", order.id);
+    res.json(order);
+    
+  } catch (err) {
+    console.error("❌ Create Order Error:", err);
+    res.status(500).json({ 
+      error: "Order creation failed", 
+      details: err.message 
+    });
+  }
+});
+
+// VERIFY PAYMENT
+app.post("/verify-payment", async (req, res) => {
+  try {
+    console.log("🔐 Verify Payment Request");
+    
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      email,
+      plan
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Missing payment details" 
+      });
+    }
+
     if (!email || email.startsWith('guest_')) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Login with Google required" 
+        error: "Guest accounts cannot purchase premium"
       });
     }
 
-    if (!transactionId || !plan || !amount) {
-      return res.status(400).json({ 
-        success: false,
-        error: "Missing required fields" 
-      });
-    }
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "your_secret")
+      .update(body)
+      .digest("hex");
 
-    // Store in database
-    if (paymentsCollection) {
-      try {
-        await paymentsCollection.insertOne({
-          email: email,
-          transactionId: transactionId,
-          plan: plan,
-          amount: amount,
-          screenshot: screenshot,
-          status: 'pending',
-          submittedAt: new Date()
-        });
+    if (expectedSignature === razorpay_signature) {
+      console.log("✅ Payment Verified for:", email);
+      
+      const expiryDate = new Date();
+      expiryDate.setMonth(expiryDate.getMonth() + 1);
+      
+      if (usersCollection) {
+        await usersCollection.updateOne(
+          { email: email },
+          { 
+            $set: { 
+              isPremium: true,
+              plan: plan,
+              paymentId: razorpay_payment_id,
+              orderId: razorpay_order_id,
+              purchaseDate: new Date(),
+              expiryDate: expiryDate,
+              lastUpdated: new Date()
+            }
+          },
+          { upsert: true }
+        );
         
-        console.log("✅ Payment stored");
-      } catch (dbError) {
-        if (dbError.code === 11000) {
-          return res.status(400).json({
-            success: false,
-            error: "Transaction ID already submitted"
-          });
-        }
-        throw dbError;
+        console.log("💾 Saved to database");
       }
-    }
-    
-    res.json({ 
-      success: true,
-      message: "Payment submitted! Check WhatsApp." 
-    });
-
-  } catch (err) {
-    console.error("❌ Submit Error:", err);
-    res.status(500).json({ 
-      success: false,
-      error: err.message 
-    });
-  }
-});
-
-// ============================================
-// 🔥 WHATSAPP COMMAND API - Activate Premium
-// ============================================
-
-// Endpoint to activate premium (you'll call this via WhatsApp bot or manually via URL)
-app.post("/activate-premium", async (req, res) => {
-  try {
-    const { transactionId, secret } = req.body;
-    
-    // 🔒 SECRET KEY - CHANGE THIS!
-    const SECRET_KEY = "my_whatsapp_secret_2026";
-    
-    if (secret !== SECRET_KEY) {
-      return res.status(403).json({ 
-        success: false,
-        error: "Unauthorized" 
+      
+      return res.json({ 
+        success: true, 
+        isPremium: true,
+        expiryDate: expiryDate,
+        message: "Payment verified!" 
       });
-    }
-
-    if (!transactionId) {
+      
+    } else {
+      console.error("❌ Signature Mismatch");
       return res.status(400).json({ 
         success: false,
-        error: "Transaction ID required" 
+        error: "Invalid signature" 
       });
     }
-
-    if (!paymentsCollection || !usersCollection) {
-      return res.status(500).json({ 
-        success: false,
-        error: "Database not connected" 
-      });
-    }
-
-    // Find payment
-    const payment = await paymentsCollection.findOne({ 
-      transactionId: transactionId 
-    });
-
-    if (!payment) {
-      return res.status(404).json({ 
-        success: false,
-        error: "Payment not found with this Transaction ID" 
-      });
-    }
-
-    if (payment.status === 'verified') {
-      return res.json({ 
-        success: true,
-        message: "Already activated",
-        email: payment.email 
-      });
-    }
-
-    // Activate premium - 30 days
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
     
-    await usersCollection.updateOne(
-      { email: payment.email },
-      { 
-        $set: { 
-          isPremium: true,
-          plan: payment.plan,
-          transactionId: transactionId,
-          purchaseDate: new Date(),
-          expiryDate: expiryDate,
-          lastUpdated: new Date()
-        }
-      },
-      { upsert: true }
-    );
-
-    // Mark as verified
-    await paymentsCollection.updateOne(
-      { transactionId: transactionId },
-      { 
-        $set: { 
-          status: 'verified',
-          verifiedAt: new Date()
-        }
-      }
-    );
-
-    console.log(`✅ PREMIUM ACTIVATED: ${payment.email}`);
-    
-    res.json({ 
-      success: true,
-      message: "Premium activated!",
-      email: payment.email,
-      plan: payment.plan,
-      expiryDate: expiryDate
-    });
-
   } catch (err) {
-    console.error("❌ Activation Error:", err);
+    console.error("❌ Verify Error:", err);
     res.status(500).json({ 
       success: false,
-      error: err.message 
+      error: "Verification failed"
     });
   }
 });
 
-// Check premium status
+// CHECK PREMIUM STATUS
 app.post("/check-status", async (req, res) => {
   try {
     const { email } = req.body;
@@ -323,175 +275,6 @@ app.post("/check-status", async (req, res) => {
   }
 });
 
-// ============================================
-// 📱 SIMPLE ACTIVATION PAGE (For WhatsApp)
-// ============================================
-
-app.get("/activate", (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Activate Premium</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: system-ui; 
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-        .container {
-          background: white;
-          border-radius: 20px;
-          padding: 40px;
-          max-width: 400px;
-          width: 100%;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 { color: #667eea; margin-bottom: 30px; text-align: center; }
-        input {
-          width: 100%;
-          padding: 15px;
-          border: 2px solid #e0e0e0;
-          border-radius: 10px;
-          font-size: 1rem;
-          margin-bottom: 20px;
-          transition: all 0.3s;
-        }
-        input:focus {
-          outline: none;
-          border-color: #667eea;
-        }
-        button {
-          width: 100%;
-          padding: 15px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border: none;
-          border-radius: 10px;
-          font-size: 1.1rem;
-          font-weight: bold;
-          cursor: pointer;
-          transition: transform 0.2s;
-        }
-        button:hover {
-          transform: translateY(-2px);
-        }
-        button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .result {
-          margin-top: 20px;
-          padding: 15px;
-          border-radius: 10px;
-          text-align: center;
-          font-weight: bold;
-          display: none;
-        }
-        .success { background: #d4edda; color: #155724; display: block; }
-        .error { background: #f8d7da; color: #721c24; display: block; }
-        .info {
-          background: #f8f9fa;
-          padding: 15px;
-          border-radius: 10px;
-          margin-top: 20px;
-          font-size: 0.85rem;
-          color: #666;
-          line-height: 1.6;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>👑 Activate Premium</h1>
-        
-        <input 
-          type="text" 
-          id="txnId" 
-          placeholder="Enter Transaction ID"
-          autocomplete="off"
-        >
-        
-        <input 
-          type="password" 
-          id="secret" 
-          placeholder="Enter Secret Key"
-          value="my_whatsapp_secret_2026"
-          style="display:none"
-        >
-        
-        <button onclick="activate()">Activate Premium</button>
-        
-        <div id="result" class="result"></div>
-        
-        <div class="info">
-          <strong>📌 Instructions:</strong><br>
-          1. Verify payment in your UPI app<br>
-          2. Enter the Transaction ID above<br>
-          3. Click "Activate Premium"<br>
-          4. User will get premium instantly!
-        </div>
-      </div>
-      
-      <script>
-        async function activate() {
-          const txnId = document.getElementById('txnId').value.trim();
-          const secret = document.getElementById('secret').value;
-          const resultDiv = document.getElementById('result');
-          
-          if (!txnId) {
-            resultDiv.className = 'result error';
-            resultDiv.textContent = '⚠️ Please enter Transaction ID';
-            return;
-          }
-          
-          const btn = document.querySelector('button');
-          btn.disabled = true;
-          btn.textContent = 'Processing...';
-          
-          try {
-            const res = await fetch('/activate-premium', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ transactionId: txnId, secret: secret })
-            });
-            
-            const data = await res.json();
-            
-            if (data.success) {
-              resultDiv.className = 'result success';
-              resultDiv.innerHTML = '✅ Premium Activated!<br>Email: ' + data.email;
-              document.getElementById('txnId').value = '';
-            } else {
-              resultDiv.className = 'result error';
-              resultDiv.textContent = '❌ ' + data.error;
-            }
-            
-          } catch (err) {
-            resultDiv.className = 'result error';
-            resultDiv.textContent = '❌ Error: ' + err.message;
-          }
-          
-          btn.disabled = false;
-          btn.textContent = 'Activate Premium';
-        }
-        
-        document.getElementById('txnId').addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') activate();
-        });
-      </script>
-    </body>
-    </html>
-  `);
-});
-
 // ================== CHAT SOCKET ==================
 let queue = [];
 
@@ -506,17 +289,22 @@ io.on("connection", (socket) => {
       partnerGender: "random"
     };
 
+    // SERVER-SIDE VALIDATION
     if (userInfo.partnerGender !== 'random') {
       if (userInfo.isGuest || !userInfo.email || userInfo.email.startsWith('guest_')) {
         socket.userInfo.partnerGender = 'random';
-        socket.emit('premium_required', { message: 'Gender filters require Google login & Premium' });
+        socket.emit('premium_required', { 
+          message: 'Gender filters require Google login & Premium' 
+        });
       } else if (!userInfo.isPremium && usersCollection) {
         try {
           const user = await usersCollection.findOne({ email: userInfo.email });
           
           if (!user || !user.isPremium) {
             socket.userInfo.partnerGender = 'random';
-            socket.emit('premium_required', { message: 'Premium subscription required for filters' });
+            socket.emit('premium_required', { 
+              message: 'Premium subscription required for filters' 
+            });
           }
         } catch (err) {
           socket.userInfo.partnerGender = 'random';
@@ -557,6 +345,7 @@ io.on("connection", (socket) => {
     } else {
       queue.push(socket);
       socket.emit("waiting");
+      console.log("⏳ User waiting:", socket.id);
     }
   });
 
@@ -593,8 +382,10 @@ process.on('SIGINT', async () => {
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log("🚀 Server running on port", PORT);
-  console.log("💳 Payment: WhatsApp UPI Verification");
+  console.log("🔑 Razorpay:", process.env.RAZORPAY_KEY_ID ? "Set ✅" : "Not Set ⚠️");
   console.log("🗄️  MongoDB:", db ? "Connected ✅" : "Not Connected ⚠️");
-  console.log("📱 Activation Page: /activate");
-  console.log("🔐 Secret Key: my_whatsapp_secret_2026");
+  console.log("🌐 CORS enabled for:");
+  console.log("   - https://anonconnect-14b47.web.app");
+  console.log("   - https://anonchatrandom.in");
+  console.log("   - https://www.anonchatrandom.in");
 });
